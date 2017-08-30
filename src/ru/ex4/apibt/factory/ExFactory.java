@@ -1,6 +1,7 @@
 package ru.ex4.apibt.factory;
 
 import ru.ex4.apibt.IExConst;
+import ru.ex4.apibt.MainProperties;
 import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.factory.processing.JSONProcessor;
 import ru.ex4.apibt.requestPlugin.ExRequest;
@@ -8,6 +9,7 @@ import ru.ex4.apibt.requestPlugin.ExRequest;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 public class ExFactory {
     //region fields
@@ -20,7 +22,14 @@ public class ExFactory {
 
     public static ExFactory exFactoryInstance() {
         if (exRequest == null) {
-            exRequest = new ExRequest(IExConst.Ex_PATH, IExConst.Ex_KEY, IExConst.Ex_SECRET);
+            Properties properties = MainProperties.getProperties();
+            if (properties != null) {
+                String path = properties.getProperty("ex.path");
+                String key = properties.getProperty("ex.key");
+                String secret = properties.getProperty("ex.secret");
+
+                exRequest = new ExRequest(path, key, secret);
+            }
         }
         return new ExFactory();
     }
