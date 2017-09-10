@@ -19,7 +19,7 @@ public class JSONProcessor<T> {
 
             if (o instanceof LinkedHashMap) {
                 LinkedHashMap linkedHashMap = (LinkedHashMap) o;
-                linkedHashMap.put("currency", keySet);
+                linkedHashMap.put("pair", keySet);
                 String valueAsString1 = objectMapper.writer().writeValueAsString(linkedHashMap);
 
                 T tradeDto1 = objectMapper.readValue(valueAsString1, clazz);
@@ -29,7 +29,7 @@ public class JSONProcessor<T> {
 
             if (o instanceof ArrayList) {
                 Map<String, Object> listMap = new HashMap<>();
-                listMap.put("currency", keySet);
+                listMap.put("pair", keySet);
                 listMap.put("values", o);
 
                 String valueAsString = objectMapper.writer().writeValueAsString(listMap);

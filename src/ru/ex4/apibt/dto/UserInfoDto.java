@@ -11,9 +11,9 @@ public class UserInfoDto {
     //      дата и время сервера
     private Date serverData;
     //      доступный баланс
-    private ArrayList<PairSum> balances;
+    private ArrayList<Balance> balances;
     //      баланс в ордерах
-    private ArrayList<PairSum> reserved;
+    private ArrayList<Balance> reserved;
 
     @JsonProperty("server_date")
     private void setServerData(Long serverData) {
@@ -23,48 +23,48 @@ public class UserInfoDto {
     @JsonProperty("balances")
     private void setBalances(LinkedHashMap<Object, Object> balances) {
         this.balances = new ArrayList<>();
-        convertObjectToPairSum(this.balances, balances);
+        convertObjectToBalance(this.balances, balances);
     }
 
     @JsonProperty("reserved")
     private void setReserved(LinkedHashMap<Object, Object> reserved) {
         this.reserved = new ArrayList<>();
-        convertObjectToPairSum(this.reserved, reserved);
+        convertObjectToBalance(this.reserved, reserved);
     }
 
-    private void convertObjectToPairSum(ArrayList<PairSum> thisPairSum, LinkedHashMap<Object, Object> hashMap) {
+    private void convertObjectToBalance(ArrayList<Balance> thisBalance, LinkedHashMap<Object, Object> hashMap) {
         if (hashMap != null) {
             Set<Object> objects = hashMap.keySet();
             for (Object key : objects) {
                 Object o = hashMap.get(key);
-                PairSum pairSum = new PairSum(key.toString(), Float.valueOf(o.toString()));
-                thisPairSum.add(pairSum);
+                Balance pairSum = new Balance(key.toString(), Float.valueOf(o.toString()));
+                thisBalance.add(pairSum);
             }
         }
     }
 
 
-    public class PairSum {
+    public class Balance {
         //  валюта
-        private String pair;
+        private String currency;
         //  сумма
         private float amount;
 
 
-        public PairSum() {
+        public Balance() {
         }
 
-        public PairSum(String pair, float amount) {
+        public Balance(String currency, float amount) {
             this.amount = amount;
-            this.pair = pair;
+            this.currency = currency;
         }
 
         public float getAmount() {
             return amount;
         }
 
-        public String getPair() {
-            return pair;
+        public String getCurrency() {
+            return currency;
         }
     }
 
@@ -77,11 +77,11 @@ public class UserInfoDto {
         return serverData;
     }
 
-    public ArrayList<PairSum> getReserved() {
+    public ArrayList<Balance> getReserved() {
         return reserved;
     }
 
-    public ArrayList<PairSum> getBalances() {
+    public ArrayList<Balance> getBalances() {
         return balances;
     }
 }

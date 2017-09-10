@@ -13,7 +13,7 @@ public class TickerService {
     public static TickerDto getTickerDtoByPair(String pair) throws IOException {
         List<TickerDto> tickerDtoList = exFactory.getTicker();
         for (TickerDto tickerDto : tickerDtoList) {
-            if (tickerDto.getCurrency().equals(pair)) {
+            if (tickerDto.getPair().equals(pair)) {
                 return tickerDto;
             }
         }

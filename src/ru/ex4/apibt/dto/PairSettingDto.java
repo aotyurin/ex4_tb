@@ -3,9 +3,9 @@ package ru.ex4.apibt.dto;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 public class PairSettingDto {
-    //      валюта
-    @JsonProperty("currency")
-    private String currency;
+    //      валютная пара
+    @JsonProperty("pair")
+    private String pair;
     //    минимальное кол-во по ордеру
     @JsonProperty("min_quantity")
     private float minQuantity;
@@ -30,9 +30,8 @@ public class PairSettingDto {
     }
 
 
-
-    public String getCurrency() {
-        return currency;
+    public String getPair() {
+        return pair;
     }
 
     public float getMinQuantity() {
@@ -63,7 +62,7 @@ public class PairSettingDto {
     @Override
     public String toString() {
         return "PairSettingDto{" +
-                "currency='" + currency + '\'' +
+                "pair='" + pair + '\'' +
                 ", minQuantity=" + minQuantity +
                 ", maxQuantity=" + maxQuantity +
                 ", minPrice=" + minPrice +

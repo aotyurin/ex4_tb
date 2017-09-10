@@ -7,6 +7,8 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -15,16 +17,16 @@ import java.util.Map;
 public class ExRequest {
     //      инкрементное число
     private static long _nonce;
-    private String _path;
+    private String _url;
     private String _key;
     private String _secret;
 
     private ExRequest() {
     }
 
-    public ExRequest(String path, String key, String secret) {
+    public ExRequest(String url, String key, String secret) {
         _nonce = System.nanoTime();
-        _path = path;
+        _url = url;
         _key = key;
         _secret = secret;
     }
@@ -83,7 +85,7 @@ public class ExRequest {
 
             RequestBody body = RequestBody.create(form, postData);
             Request request = new Request.Builder()
-                    .url(_path + method)
+                    .url(_url + method)
                     .addHeader("Key", _key)
                     .addHeader("Sign", sign)
                     .post(body)
@@ -98,7 +100,7 @@ public class ExRequest {
     }
 
     public final String get(String method, Map<String, String> arguments) {
-        String path = _path + method + "/?" + joinArguments(arguments);
+        String path = _url + method + "/?" + joinArguments(arguments);
 
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()

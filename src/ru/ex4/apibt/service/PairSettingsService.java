@@ -13,7 +13,7 @@ public class PairSettingsService {
     public static PairSettingDto getPairSettingByPair(String pair) throws IOException {
         List<PairSettingDto> pairSettings = exFactory.getPairSettings();
         for (PairSettingDto pairSetting : pairSettings) {
-            if (pairSetting.getCurrency().equals(pair)) {
+            if (pairSetting.getPair().equals(pair)) {
                 return pairSetting;
             }
         }

@@ -9,29 +9,28 @@ import java.util.ArrayList;
 public class UserInfoService {
     static ExFactory exFactory = ExFactory.exFactoryInstance();
 
-    public static float getBalances(String pair) throws IOException {
+    public static float getBalances(String currency) throws IOException {
         UserInfoDto userInfo = exFactory.getUserInfo();
 
-        for (UserInfoDto.PairSum pairSum : userInfo.getBalances()) {
-            if (pairSum.getPair().equals(pair)) {
-                return pairSum.getAmount();
+        for (UserInfoDto.Balance balance : userInfo.getBalances()) {
+            if (balance.getCurrency().equals(currency)) {
+                return balance.getAmount();
             }
         }
         return 0;
     }
 
-    public static float getReserved(String pair) throws IOException {
+    public static float getReserved(String currency) throws IOException {
         UserInfoDto userInfo = exFactory.getUserInfo();
 
-        ArrayList<UserInfoDto.PairSum> reserved = userInfo.getReserved();
+        ArrayList<UserInfoDto.Balance> reserved = userInfo.getReserved();
         if (reserved != null) {
-            for (UserInfoDto.PairSum pairSum : reserved) {
-                if (pairSum.getPair().equals(pair)) {
-                    return pairSum.getAmount();
+            for (UserInfoDto.Balance balance : reserved) {
+                if (balance.getCurrency().equals(currency)) {
+                    return balance.getAmount();
                 }
             }
         }
-
         return 0;
     }
 

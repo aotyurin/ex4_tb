@@ -12,9 +12,9 @@ public class OrderBookDto {
     @JsonIgnore
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    //      валюта
-    @JsonProperty("currency")
-    private String currency;
+    //      валютная пара
+    @JsonProperty("pair")
+    private String pair;
     //        объем всех ордеров на продажу
     @JsonProperty("ask_quantity")
     private String ask_quantity;

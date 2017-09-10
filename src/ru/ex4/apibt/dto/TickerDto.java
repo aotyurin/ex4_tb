@@ -5,33 +5,33 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import java.util.Date;
 
 public class TickerDto {
-    //      валюта
-    @JsonProperty("currency")
-    private String currency;
+    //      валютная пара
+    @JsonProperty("pair")
+    private String pair;
     //    текущая максимальная цена покупки
     @JsonProperty("buy_price")
-    private Float buyPrice;
+    private float buyPrice;
     //    текущая минимальная цена продажи
     @JsonProperty("sell_price")
-    private Float sellPrice;
+    private float sellPrice;
     //    цена последней сделки
     @JsonProperty("last_trade")
-    private Float lastTrade;
+    private float lastTrade;
     //    максимальная цена сделки за 24 часа
     @JsonProperty("high")
-    private Float high;
+    private float high;
     //    минимальная цена сделки за 24 часа
     @JsonProperty("low")
-    private Float low;
+    private float low;
     //    средняя цена сделки за 24 часа
     @JsonProperty("avg")
-    private Float avg;
+    private float avg;
     //    объем всех сделок за 24 часа
     @JsonProperty("vol")
-    private Float vol;
+    private float vol;
     //    сумма всех сделок за 24 часа
     @JsonProperty("vol_curr")
-    private Float volCurr;
+    private float volCurr;
     //    дата и время обновления данных
     private Date updated;
 
@@ -45,31 +45,31 @@ public class TickerDto {
     }
 
 
-    public Float getAvg() {
+    public float getAvg() {
         return avg;
     }
 
-    public Float getBuyPrice() {
+    public float getBuyPrice() {
         return buyPrice;
     }
 
-    public String getCurrency() {
-        return currency;
+    public String getPair() {
+        return pair;
     }
 
-    public Float getHigh() {
+    public float getHigh() {
         return high;
     }
 
-    public Float getLastTrade() {
+    public float getLastTrade() {
         return lastTrade;
     }
 
-    public Float getLow() {
+    public float getLow() {
         return low;
     }
 
-    public Float getSellPrice() {
+    public float getSellPrice() {
         return sellPrice;
     }
 
@@ -77,11 +77,27 @@ public class TickerDto {
         return updated;
     }
 
-    public Float getVol() {
+    public float getVol() {
         return vol;
     }
 
-    public Float getVolCurr() {
+    public float getVolCurr() {
         return volCurr;
+    }
+
+    @Override
+    public String toString() {
+        return "TickerDto{" +
+                "pair='" + pair + '\'' +
+                ", buyPrice=" + buyPrice +
+                ", sellPrice=" + sellPrice +
+                ", lastTrade=" + lastTrade +
+                ", high=" + high +
+                ", low=" + low +
+                ", avg=" + avg +
+                ", vol=" + vol +
+                ", volCurr=" + volCurr +
+                ", updated=" + updated +
+                '}';
     }
 }

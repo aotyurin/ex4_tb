@@ -7,21 +7,28 @@ import java.util.List;
 
 
 public class TradeDto {
-    //      валюта
-    @JsonProperty("currency")
-    private String currency;
+    //      валютная пара
+    @JsonProperty("pair")
+    private String pair;
 
     @JsonProperty("values")
-    public List<Trade> trades;
+    private List<Trade> trades;
 
     private TradeDto() {
     }
 
-    public TradeDto(String currency, List<Trade> trades) {
-        this.currency = currency;
+    public TradeDto(String pair, List<Trade> trades) {
+        this.pair = pair;
         this.trades = trades;
     }
 
+    public String getPair() {
+        return pair;
+    }
+
+    public List<Trade> getTrades() {
+        return trades;
+    }
 
     public static class Trade {
         //        идентификатор сделки
@@ -29,16 +36,16 @@ public class TradeDto {
         private Long tradeId;
         //        тип сделки
         @JsonProperty("type")
-        private String type;
+        private TypeOrder type;
         //        цена сделки
         @JsonProperty("price")
-        private String price;
+        private float price;
         //        кол-во по сделке
         @JsonProperty("quantity")
-        private String quantity;
+        private float quantity;
         //        сумма сделки
         @JsonProperty("amount")
-        private String amount;
+        private float amount;
         //        дата и время сделки
         private Date date;
 
@@ -47,10 +54,10 @@ public class TradeDto {
             this.date = new Date(date * 1000L);
         }
 
-        private Trade() {
+        protected Trade() {
         }
 
-        public Trade(String amount, Date date, String price, String quantity, Long tradeId, String type) {
+        public Trade(float amount, Date date, float price, float quantity, Long tradeId, TypeOrder type) {
             this.amount = amount;
             this.date = date;
             this.price = price;
@@ -60,7 +67,7 @@ public class TradeDto {
         }
 
 
-        public String getAmount() {
+        public float getAmount() {
             return amount;
         }
 
@@ -68,11 +75,11 @@ public class TradeDto {
             return date;
         }
 
-        public String getPrice() {
+        public float getPrice() {
             return price;
         }
 
-        public String getQuantity() {
+        public float getQuantity() {
             return quantity;
         }
 
@@ -80,8 +87,20 @@ public class TradeDto {
             return tradeId;
         }
 
-        public String getType() {
+        public TypeOrder getType() {
             return type;
+        }
+
+        @Override
+        public String toString() {
+            return "Trade{" +
+                    "tradeId=" + tradeId +
+                    ", type=" + type +
+                    ", price=" + price +
+                    ", quantity=" + quantity +
+                    ", amount=" + amount +
+                    ", date=" + date +
+                    '}';
         }
     }
 
