@@ -7,9 +7,7 @@ import java.util.Properties;
 
 public class MainProperties {
 
-    public static Properties getProperties() {
-        final String path = "main.properties";
-
+    public static Properties getProperties(final String path) {
         try {
             Properties mainProperties = new Properties();
 
@@ -20,7 +18,7 @@ public class MainProperties {
             return mainProperties;
 
         } catch (IOException e) {
-            throw new RuntimeException("ОШИБКА: Файл свойств отсуствует!");
+            throw new RuntimeException("ОШИБКА: Файл " + path + " отсуствует!");
         }
     }
 

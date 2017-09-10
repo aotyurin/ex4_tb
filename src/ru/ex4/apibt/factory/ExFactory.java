@@ -22,13 +22,18 @@ public class ExFactory {
 
     public static ExFactory exFactoryInstance() {
         if (exRequest == null) {
-            Properties properties = MainProperties.getProperties();
+            final String path = "main.properties";
+
+            Properties properties = MainProperties.getProperties(path);
             if (properties != null) {
-                String path = properties.getProperty("ex.path");
+                String url = properties.getProperty("ex.path");
                 String key = properties.getProperty("ex.key");
                 String secret = properties.getProperty("ex.secret");
+                if (url == null | key == null | secret == null) {
+                    throw new RuntimeException("Значения в " + path + " заданы не верно");
+                }
 
-                exRequest = new ExRequest(path, key, secret);
+                exRequest = new ExRequest(url, key, secret);
             }
         }
         return new ExFactory();
@@ -81,6 +86,25 @@ public class ExFactory {
         return new JSONProcessor<UserInfoDto>().processSimple(UserInfoDto.class, userInfo);
     }
 
+    //      Получение списока открытых ордеров пользователя
+    public List<UserOpenOrderDto> getUserOpenOrders() throws IOException {
+        String userOpenOrders = exRequest.post("user_open_orders", null);
+        return new JSONProcessor<UserOpenOrderDto>().process(UserOpenOrderDto.class, userOpenOrders);
+    }
+
+    //      Получение сделок пользователя
+    public List<UserTradeDto> getUserTrades(String pair, Integer limit) throws IOException {
+        HashMap<String, String> arguments = new HashMap<>();
+        arguments.put("pair", pair);
+        arguments.put("offset", "0");
+        if (limit != null && limit <= 1000) {
+            arguments.put("limit", String.valueOf(limit));
+        }
+
+        String userTrades = exRequest.post("user_trades", arguments);
+        return new JSONProcessor<UserTradeDto>().process(UserTradeDto.class, userTrades);
+    }
+
     //      Создание ордера
     public OrderCreateResultDto orderCreate(OrderCreateDto orderCreateDto) throws IOException {
         HashMap<String, String> arguments = new HashMap<>();
@@ -100,6 +124,15 @@ public class ExFactory {
 
         String orderCanceled = exRequest.post("order_cancel", arguments);
         return new JSONProcessor<OrderCreateResultDto>().processSimple(OrderCreateResultDto.class, orderCanceled);
+    }
+
+    //    Подсчет в какую сумму обойдется покупка определенного кол-ва валюты по конкретной валютной паре
+    public String requiredAmount(String pair, float quantity) {
+        HashMap<String, String> arguments = new HashMap<>();
+        arguments.put("pair", pair);
+        arguments.put("quantity", String.valueOf(quantity));
+
+        return  exRequest.post("required_amount", arguments);
     }
 
     //endregion
