@@ -1,0 +1,104 @@
+
+
+        // карусель RUB-BTC-LTC-ETH-RUB
+
+        float amount = 2810;
+
+        String pair1 = "BTC_RUB";
+        System.out.println("!!!!!!!!!!!!  - " + pair1);
+        TickerDto tickerDtoByPair1 = TickerService.getTickerDtoByPair(pair1);
+        float sellPrice1 = tickerDtoByPair1.getSellPrice();
+        float quantity1 = (amount - amount * IExConst.STOCK_FEE) / sellPrice1;
+
+        System.out.println(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity1, sellPrice1));
+        System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair1);
+
+        String required_amount = exFactory.required_amount(pair1, quantity1);
+        System.out.println(required_amount);
+
+
+        String pair2 = "LTC_BTC";
+        System.out.println("!!!!!!!!!!!!  - " + pair2);
+        TickerDto tickerDtoByPair2 = TickerService.getTickerDtoByPair(pair2);
+        float sellPrice2 = tickerDtoByPair2.getSellPrice();
+        float quantity2 = (quantity1 - quantity1 * IExConst.STOCK_FEE) / sellPrice2;
+
+        System.out.println(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity2, sellPrice2));
+        System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair2);
+
+        String required_amount2 = exFactory.required_amount(pair2, quantity2);
+        System.out.println(required_amount2);
+
+
+        String pair3 = "ETH_LTC";
+        System.out.println("!!!!!!!!!!!!  - " + pair3);
+        TickerDto tickerDtoByPair3 = TickerService.getTickerDtoByPair(pair3);
+        float sellPrice3 = tickerDtoByPair3.getSellPrice();
+        float quantity3 = (quantity2 - quantity2 * IExConst.STOCK_FEE) / sellPrice3;
+
+        System.out.println(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity3, sellPrice3));
+        System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair3);
+
+        String required_amount3 = exFactory.required_amount(pair3, quantity3);
+        System.out.println(required_amount3);
+
+        // вернуть рубли
+        String pair4 = IExConst.PAIR;
+        System.out.println("!!!!!!!!!!!!  - " + pair4);
+        TickerDto tickerDtoByPair4 = TickerService.getTickerDtoByPair(pair4);
+        float buyPrice4 = tickerDtoByPair4.getBuyPrice();
+        float quantity4 = buyPrice4 * quantity3 - quantity3 * IExConst.STOCK_FEE;
+        System.out.println(String.format("Продаем: сумма %1$s, цена %2$s", quantity4, buyPrice4));
+        System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair4);
+
+        System.out.println("профит: " + (quantity4 - amount));
+
+
+        // карусель ZEC-RUB ZEC-BTC LTC-BTC ETH-LTC ETH-RUB
+        String pair5 ="ZEC_RUB";
+        System.out.println("!!!!!!!!!!!!  - " + pair5);
+        TickerDto tickerDtoByPair5 = TickerService.getTickerDtoByPair(pair5);
+        float sellPrice5 = tickerDtoByPair5.getSellPrice();
+        float quantity5 = (amount - amount * IExConst.STOCK_FEE) / sellPrice5;
+        System.out.println(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity5, sellPrice5));
+        System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair5);
+        String required_amount5 = exFactory.required_amount(pair3, quantity5);
+        System.out.println(required_amount5);
+
+        String pair6 ="ZEC_BTC";
+        System.out.println("!!!!!!!!!!!!  - " + pair6);
+        TickerDto tickerDtoByPair6 = TickerService.getTickerDtoByPair(pair6);
+        float buyPrice6 = tickerDtoByPair6.getBuyPrice();
+        float quantity6 = buyPrice6 * quantity5 - quantity5 * IExConst.STOCK_FEE;
+        System.out.println(String.format("Продаем: сумма %1$s, цена %2$s", quantity6, buyPrice6));
+        System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair6);
+
+        String pair7 ="LTC_BTC";
+        System.out.println("!!!!!!!!!!!!  - " + pair7);
+        TickerDto tickerDtoByPair7 = TickerService.getTickerDtoByPair(pair7);
+        float sellPrice7 = tickerDtoByPair7.getSellPrice();
+        float quantity7 = (quantity6 - quantity6 * IExConst.STOCK_FEE) / sellPrice7;
+        System.out.println(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity7, sellPrice7));
+        System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair7);
+        String required_amount7 = exFactory.required_amount(pair7, quantity7);
+        System.out.println(required_amount7);
+
+        String pair8 ="ETH_LTC";
+        System.out.println("!!!!!!!!!!!!  - " + pair8);
+        TickerDto tickerDtoByPair8 = TickerService.getTickerDtoByPair(pair8);
+        float sellPrice8 = tickerDtoByPair8.getSellPrice();
+        float quantity8 = (quantity7 - quantity7 * IExConst.STOCK_FEE) / sellPrice8;
+        System.out.println(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity8, sellPrice8));
+        System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair8);
+        String required_amount8 = exFactory.required_amount(pair8, quantity8);
+        System.out.println(required_amount8);
+
+        String pair9 ="ETH_RUB";
+        System.out.println("!!!!!!!!!!!!  - " + pair9);
+        TickerDto tickerDtoByPair9 = TickerService.getTickerDtoByPair(pair9);
+        float buyPrice9 = tickerDtoByPair9.getBuyPrice();
+        float quantity9 = buyPrice9 * quantity8 - quantity8 * IExConst.STOCK_FEE;
+        System.out.println(String.format("Продаем: сумма %1$s, цена %2$s", quantity9, buyPrice9));
+        System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair9);
+
+        System.out.println("профит: " + (quantity9 - amount));
