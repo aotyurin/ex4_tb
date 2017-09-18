@@ -1,8 +1,6 @@
 package ru.ex4.apibt;
 
 
-import ru.ex4.apibt.bd.JdbcTemplate;
-import ru.ex4.apibt.dao.InitBaseDao;
 import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.factory.ExFactory;
 import ru.ex4.apibt.log.Logs;
@@ -73,18 +71,17 @@ public class Main {
                     Calendar current = Calendar.getInstance();
                     current.setTime(new Date());
 
-//                    if (deviationPrice >= 5 || orderCreated.get(Calendar.DAY_OF_YEAR) != current.get(Calendar.DAY_OF_YEAR)) {
-//                        Logs.info("Отмена ордера: " + userOpenOrder.getOrderId());
-//                        OrderCreateResultDto orderCancel = exFactory.orderCancel(userOpenOrder.getOrderId());
-//                        if (!orderCancel.getResult()) {
-//                            throw new RuntimeException("Ошибка отмены ордера: " + orderCancel.getError());
-//                        }
-//                        // удалить order_id из бд 'актуальные ордера'
-//                    }
+                    if (deviationPrice >= 5 || orderCreated.get(Calendar.DAY_OF_YEAR) != current.get(Calendar.DAY_OF_YEAR)) {
+                        Logs.info("Отмена ордера: " + userOpenOrder.getOrderId());
+                        OrderCreateService.orderCancel(userOpenOrder.getOrderId());
+
+                        UserOpenOrderService.deleteByOrderId(userOpenOrder.getOrderId());
+                    }
                 }
             }
         } else {
             Logs.error("удалить из бд 'актуальные ордера', тк уже все проданы");
+            UserOpenOrderService.deleteAll();
         }
         //endregion
 
@@ -93,11 +90,7 @@ public class Main {
     }
 
     private static void initBD() throws IOException {
-        InitBaseDao initBaseDao = new InitBaseDao();
-
-        initBaseDao.init();
-        initBaseDao.fillUserInfo();
-        initBaseDao.fillPairSetting();
+        new InitBaseService().init();
     }
 
     private static void buyCurrencyBase(float balances) throws IOException {
@@ -110,12 +103,10 @@ public class Main {
                 float quantity = (balances - balances * IExConst.STOCK_FEE) / sellPrice;
                 Logs.info(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity, sellPrice));
                 Logs.info("Текущие цены и объемы торгов: " + tickerDtoByPair);
+                OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, sellPrice, TypeOrder.buy);
+                String orderId = OrderCreateService.orderCreate(orderCreateDto);
 
-//                OrderCreateResultDto createResultDto = exFactory.orderCreate(new OrderCreateDto(IExConst.PAIR, quantity, sellPrice, TypeOrder.buy));
-//                if (!createResultDto.getResult()) {
-//                    throw new RuntimeException("Ошибка покупки по ордеру: " + createResultDto.getError());
-//                }
-                //todo сохранить в бд "актуальные ордера" order_id и текущую цену sellPrice, TypeOrder.buy
+                UserOpenOrderService.save(orderId, orderCreateDto, sellPrice);
 
                 try {
                     Logs.info(String.format(" !!! buyCurrencyBase. Ждем %1$s мин после покупки", IExConst.ORDER_LIFE));
@@ -133,17 +124,14 @@ public class Main {
         if (waitDownwardTrend(null)) {
             TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
             if (tickerDtoByPair != null) {
-                //todo если текущая цена (- IExConst.STOCK_FEE) больше цены ранее покупки IExConst.CURRENCY_BASE, то продаем
-
                 float buyPrice = tickerDtoByPair.getBuyPrice();
                 float quantity = buyPrice * balances - balances * IExConst.STOCK_FEE;
                 Logs.info(String.format("Выставлен ордер на продажу: кол-во %1$s, цена %2$s", quantity, buyPrice));
                 Logs.info("Текущие цены и объемы торгов: " + tickerDtoByPair);
-//                OrderCreateResultDto createResultDto = exFactory.orderCreate(new OrderCreateDto(IExConst.PAIR, quantity, buyPrice, TypeOrder.sell));
-//                if (!createResultDto.getResult()) {
-//                    throw new RuntimeException("Ошибка продажи по ордеру: " + createResultDto.getError());
-//                }
-                //todo  сохранить в бд "актуальные ордера" order_id и текущую цену buyPrice, TypeOrder.sell
+                OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, buyPrice, TypeOrder.sell);
+                String orderId = OrderCreateService.orderCreate(orderCreateDto);
+
+                UserOpenOrderService.save(orderId, orderCreateDto, buyPrice);
 
                 try {
                     Logs.info(String.format(" !!! sellCurrencyBase. Ждем %1$s мин после продажи", IExConst.ORDER_LIFE));

@@ -4,19 +4,21 @@ import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
 import ru.ex4.apibt.dto.PairSettingDto;
 import ru.ex4.apibt.dto.UserInfoDto;
-import ru.ex4.apibt.factory.ExFactory;
+import ru.ex4.apibt.log.Logs;
 
-import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class InitBaseDao {
     private JdbcTemplate jdbcTemplate;
 
-    ExFactory exFactory = ExFactory.exFactoryInstance();
-
     public InitBaseDao() {
-        this.jdbcTemplate = new JdbcTemplate();
+        try {
+            this.jdbcTemplate = JdbcTemplate.getInstance();
+        } catch (SQLException e) {
+            Logs.error(e.getMessage());
+        }
     }
 
     public void init() {
@@ -34,11 +36,16 @@ public class InitBaseDao {
         jdbcTemplate.executeUpdate(sqlCreate__Pair_Setting);
         String sqlClean__Pair_Setting = "DELETE FROM Pair_Setting;";
         jdbcTemplate.executeUpdate(sqlClean__Pair_Setting);
+
+        String sqlCreate__User_Order = "CREATE TABLE IF NOT EXISTS User_Order(orderId TEXT, pair TEXT, quantity REAL, price REAL, type TEXT, currPrice REAL);";
+        jdbcTemplate.executeUpdate(sqlCreate__User_Order);
+        String sqlClean__User_Order = "DELETE FROM User_Order;";
+        jdbcTemplate.executeUpdate(sqlClean__User_Order);
+
+
     }
 
-    public void fillUserInfo() throws IOException {
-        UserInfoDto userInfo = exFactory.getUserInfo();
-
+    public void fillUserInfo(UserInfoDto userInfo) {
         String uid = userInfo.getUid();
 
         ArrayList<UserInfoDto.Balance> balances = userInfo.getBalances();
@@ -47,7 +54,7 @@ public class InitBaseDao {
             prs.setValues("uid", uid);
             prs.setValues("currency", balance.getCurrency());
             prs.setValues("amount", balance.getAmount());
-            jdbcTemplate.executeUpdate("insert INTO User_Info_Balance VALUES (:uid, :currency, :amount);", prs);
+            jdbcTemplate.executeUpdate("INSERT INTO User_Info_Balance VALUES (:uid, :currency, :amount);", prs);
         }
 
         ArrayList<UserInfoDto.Balance> reserved = userInfo.getReserved();
@@ -56,13 +63,11 @@ public class InitBaseDao {
             prs.setValues("uid", uid);
             prs.setValues("currency", balance.getCurrency());
             prs.setValues("amount", balance.getAmount());
-            jdbcTemplate.executeUpdate("insert INTO User_Info_Reserved VALUES (:uid, :currency, :amount);", prs);
+            jdbcTemplate.executeUpdate("INSERT INTO User_Info_Reserved VALUES (:uid, :currency, :amount);", prs);
         }
     }
 
-    public void fillPairSetting() throws IOException {
-        List<PairSettingDto> pairSettings = exFactory.getPairSettings();
-
+    public void fillPairSetting(List<PairSettingDto> pairSettings) {
         for (PairSettingDto pairSetting : pairSettings) {
             PreparedParamsSetter prs = new PreparedParamsSetter();
             prs.setValues("pair", pairSetting.getPair());
@@ -73,7 +78,7 @@ public class InitBaseDao {
             prs.setValues("minPrice", pairSetting.getMinPrice());
             prs.setValues("minQuantity", pairSetting.getMinQuantity());
 
-            jdbcTemplate.executeUpdate("insert INTO Pair_Setting VALUES (:pair, :maxAmount, :maxPrice, :maxQuantity, :minAmount, :minPrice, :minQuantity);", prs);
+            jdbcTemplate.executeUpdate("INSERT INTO Pair_Setting VALUES (:pair, :maxAmount, :maxPrice, :maxQuantity, :minAmount, :minPrice, :minQuantity);", prs);
         }
 
     }
