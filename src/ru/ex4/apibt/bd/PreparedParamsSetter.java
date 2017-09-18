@@ -3,12 +3,13 @@ package ru.ex4.apibt.bd;
 
 
 import org.junit.Assert;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class PreparedParamsSetter {
 
-    List<PreparedParams> preparedParams = new ArrayList<>();
+    private List<PreparedParams> preparedParams = new ArrayList<>();
 
     public void setValues(String name, Object value) {
         Assert.assertNotNull(name);
