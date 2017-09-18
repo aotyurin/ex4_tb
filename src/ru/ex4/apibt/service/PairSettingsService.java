@@ -21,4 +21,12 @@ public class PairSettingsService {
     }
 
 
+    public static List<PairSettingDto> getPairSetting() {
+        try {
+            return exFactory.getPairSettings();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
 }
