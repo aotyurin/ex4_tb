@@ -2,6 +2,7 @@ package ru.ex4.apibt.requestPlugin;
 
 import okhttp3.*;
 import org.apache.commons.codec.binary.Hex;
+import ru.ex4.apibt.log.Logs;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -48,7 +49,7 @@ public class ExRequest {
         try {
             key = new SecretKeySpec(_secret.getBytes("UTF-8"), "HmacSHA512");
         } catch (UnsupportedEncodingException uee) {
-            System.err.println("Unsupported encoding exception: " + uee.toString());
+            Logs.error("Unsupported encoding exception: " + uee.toString());
             return null;
         }
 
@@ -56,7 +57,7 @@ public class ExRequest {
         try {
             mac = Mac.getInstance("HmacSHA512");
         } catch (NoSuchAlgorithmException nsae) {
-            System.err.println("No such algorithm exception: " + nsae.toString());
+            Logs.error("No such algorithm exception: " + nsae.toString());
             return null;
         }
 
@@ -64,7 +65,7 @@ public class ExRequest {
         try {
             mac.init(key);
         } catch (InvalidKeyException ike) {
-            System.err.println("Invalid key exception: " + ike.toString());
+            Logs.error("Invalid key exception: " + ike.toString());
             return null;
         }
 
@@ -73,7 +74,7 @@ public class ExRequest {
         try {
             sign = Hex.encodeHexString(mac.doFinal(postData.getBytes("UTF-8")));
         } catch (UnsupportedEncodingException uee) {
-            System.err.println("Unsupported encoding exception: " + uee.toString());
+            Logs.error("Unsupported encoding exception: " + uee.toString());
             return null;
         }
 
@@ -94,7 +95,7 @@ public class ExRequest {
             Response response = client.newCall(request).execute();
             return response.body().string();
         } catch (IOException e) {
-            System.err.println("Request post fail: " + e.toString());
+            Logs.error("Request post fail: " + e.toString());
             return null;  // An error occured...
         }
     }
@@ -111,7 +112,7 @@ public class ExRequest {
             Response response = client.newCall(request).execute();
             return response.body().string();
         } catch (IOException e) {
-            System.err.println("Request get fail: " + e.toString());
+            Logs.error("Request get fail: " + e.toString());
             return null;
         }
     }

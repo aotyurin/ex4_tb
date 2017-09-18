@@ -3,6 +3,7 @@ package ru.ex4.apibt;
 
 import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.factory.ExFactory;
+import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.service.*;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ public class Main {
     static ExFactory exFactory = ExFactory.exFactoryInstance();
 
     public static void main(String[] args) throws IOException {
-        System.out.println("hello");
+        Logs.info("hello");
 
         //region проверяем котируемую валюту и покупаем
         PairSettingDto pairSettingByPair = PairSettingsService.getPairSettingByPair(IExConst.PAIR);
@@ -23,10 +24,10 @@ public class Main {
             float balances_quoted = UserInfoService.getBalances(IExConst.CURRENCY_QUOTED);
             float minBalances = tickerDtoByPair.getBuyPrice() * pairSettingByPair.getMinQuantity() + (tickerDtoByPair.getBuyPrice() * pairSettingByPair.getMinQuantity()) * IExConst.STOCK_FEE;
             if (balances_quoted < minBalances) {
-                System.err.println(String.format("Недостаточно валюты на счете, необходимо минимум %1$s %2$s. Баланс %1$s %3$s.",
+                Logs.error(String.format("Недостаточно валюты на счете, необходимо минимум %1$s %2$s. Баланс %1$s %3$s.",
                         IExConst.CURRENCY_QUOTED, minBalances, balances_quoted));
             } else {
-                System.out.println(String.format("Баланс %1$s %2$s. Попытаемся купить %3$s.",
+                Logs.info(String.format("Баланс %1$s %2$s. Попытаемся купить %3$s.",
                         IExConst.CURRENCY_QUOTED, balances_quoted, IExConst.CURRENCY_BASE));
                 buyCurrencyBase(balances_quoted);
             }
@@ -36,10 +37,10 @@ public class Main {
         //region проверяем базовую валюту и продаем
         float balances_base = UserInfoService.getBalances(IExConst.CURRENCY_BASE);
         if (balances_base <= 0) {
-            System.err.println(String.format("Недостаточно валюты для продажи. Баланс %1$s %2$s.",
+            Logs.error(String.format("Недостаточно валюты для продажи. Баланс %1$s %2$s.",
                     IExConst.CURRENCY_BASE, balances_base));
         } else {
-            System.out.println(String.format("Баланс %1$s %2$s. Попытаемся продать.", IExConst.CURRENCY_BASE, balances_base));
+            Logs.info(String.format("Баланс %1$s %2$s. Попытаемся продать.", IExConst.CURRENCY_BASE, balances_base));
             sellCurrencyBase(balances_base);
         }
         //endregion
@@ -52,72 +53,59 @@ public class Main {
         List<UserOpenOrderDto.UserOpenOrder> userOpenOrderList = UserOpenOrderService.getUserOpenOrderByPair(IExConst.PAIR);
         if (userOpenOrderList != null) {
             for (UserOpenOrderDto.UserOpenOrder userOpenOrder : userOpenOrderList) {
-                System.out.println(String.format("userOpenOrderByPair. Имеется открытый ордер. %1$s", userOpenOrder));
+                Logs.info(String.format("userOpenOrderByPair. Имеется открытый ордер. %1$s", userOpenOrder));
 
                 tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
 
                 if (tickerDtoByPair != null) {
                     // отклонение цены от текущей в процентах
                     int deviationPrice = Math.round((userOpenOrder.getPrice() - tickerDtoByPair.getBuyPrice()) / tickerDtoByPair.getBuyPrice() * 100);
-                    System.out.println(" - отклонение цены от текущей в процентах: " + deviationPrice);
+                    Logs.info(" - отклонение цены от текущей в процентах: " + deviationPrice);
 
                     Calendar orderCreated = Calendar.getInstance();
                     orderCreated.setTime(userOpenOrder.getCreated());
                     Calendar current = Calendar.getInstance();
                     current.setTime(new Date());
 
-                    if (deviationPrice >= 5 || orderCreated.get(Calendar.DAY_OF_YEAR) != current.get(Calendar.DAY_OF_YEAR)) {
-                        System.out.println("Отмена ордера: " + userOpenOrder.getOrderId());
-                        OrderCreateResultDto orderCancel = exFactory.orderCancel(userOpenOrder.getOrderId());
-                        if (!orderCancel.getResult()) {
-                            throw new RuntimeException("Ошибка отмены ордера: " + orderCancel.getError());
-                        }
-                        // удалить order_id из бд 'актуальные ордера'
-                    } else {
-                        if (userOpenOrder.getType() == TypeOrder.buy) {
-                            if (waitUpwardTrend(null)) {
-
-                            }
-                        }
-                        if (userOpenOrder.getType() == TypeOrder.sell) {
-
-                        }
-
-                    }
-                } else {
-                    System.err.println("удалить из бд 'актуальные ордера', тк уже все проданы");
+//                    if (deviationPrice >= 5 || orderCreated.get(Calendar.DAY_OF_YEAR) != current.get(Calendar.DAY_OF_YEAR)) {
+//                        Logs.info("Отмена ордера: " + userOpenOrder.getOrderId());
+//                        OrderCreateResultDto orderCancel = exFactory.orderCancel(userOpenOrder.getOrderId());
+//                        if (!orderCancel.getResult()) {
+//                            throw new RuntimeException("Ошибка отмены ордера: " + orderCancel.getError());
+//                        }
+//                        // удалить order_id из бд 'актуальные ордера'
+//                    }
                 }
-
-
             }
+        } else {
+            Logs.error("удалить из бд 'актуальные ордера', тк уже все проданы");
         }
         //endregion
 
 
-
-        System.out.println(" ---------- end ------------- ");
+        Logs.info(" ---------- end ------------- ");
     }
 
 
     private static void buyCurrencyBase(float balances) throws IOException {
-        System.out.println(String.format("buyCurrencyBase. Пытаемся купить %1$s %2$s", IExConst.CURRENCY_BASE, balances));
+        Logs.info(String.format("buyCurrencyBase. Пытаемся купить %1$s %2$s", IExConst.CURRENCY_BASE, balances));
 
         if (waitUpwardTrend(null)) {
             TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
             if (tickerDtoByPair != null) {
                 float sellPrice = tickerDtoByPair.getSellPrice();
                 float quantity = (balances - balances * IExConst.STOCK_FEE) / sellPrice;
-                System.out.println(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity, sellPrice));
-                System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair);
+                Logs.info(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity, sellPrice));
+                Logs.info("Текущие цены и объемы торгов: " + tickerDtoByPair);
 
-                OrderCreateResultDto createResultDto = exFactory.orderCreate(new OrderCreateDto(IExConst.PAIR, quantity, sellPrice, TypeOrder.buy));
-                if (!createResultDto.getResult()) {
-                    throw new RuntimeException("Ошибка покупки по ордеру: " + createResultDto.getError());
-                }
+//                OrderCreateResultDto createResultDto = exFactory.orderCreate(new OrderCreateDto(IExConst.PAIR, quantity, sellPrice, TypeOrder.buy));
+//                if (!createResultDto.getResult()) {
+//                    throw new RuntimeException("Ошибка покупки по ордеру: " + createResultDto.getError());
+//                }
                 //todo сохранить в бд "актуальные ордера" order_id и текущую цену sellPrice, TypeOrder.buy
 
                 try {
-                    System.out.println(String.format(" !!! buyCurrencyBase. Ждем %1$s мин после покупки", IExConst.ORDER_LIFE));
+                    Logs.info(String.format(" !!! buyCurrencyBase. Ждем %1$s мин после покупки", IExConst.ORDER_LIFE));
                     Thread.sleep(1000 * 60 * IExConst.ORDER_LIFE);
                 } catch (InterruptedException ignore) {
                 }
@@ -127,7 +115,7 @@ public class Main {
 
 
     private static void sellCurrencyBase(float balances) throws IOException {
-        System.out.println(String.format("sellCurrencyBase. Пытаемся продать %1$s %2$s", IExConst.CURRENCY_BASE, balances));
+        Logs.info(String.format("sellCurrencyBase. Пытаемся продать %1$s %2$s", IExConst.CURRENCY_BASE, balances));
 
         if (waitDownwardTrend(null)) {
             TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
@@ -136,16 +124,16 @@ public class Main {
 
                 float buyPrice = tickerDtoByPair.getBuyPrice();
                 float quantity = buyPrice * balances - balances * IExConst.STOCK_FEE;
-                System.out.println(String.format("Выставлен ордер на продажу: кол-во %1$s, цена %2$s", quantity, buyPrice));
-                System.out.println("Текущие цены и объемы торгов: " + tickerDtoByPair);
-                OrderCreateResultDto createResultDto = exFactory.orderCreate(new OrderCreateDto(IExConst.PAIR, quantity, buyPrice, TypeOrder.sell));
-                if (!createResultDto.getResult()) {
-                    throw new RuntimeException("Ошибка продажи по ордеру: " + createResultDto.getError());
-                }
+                Logs.info(String.format("Выставлен ордер на продажу: кол-во %1$s, цена %2$s", quantity, buyPrice));
+                Logs.info("Текущие цены и объемы торгов: " + tickerDtoByPair);
+//                OrderCreateResultDto createResultDto = exFactory.orderCreate(new OrderCreateDto(IExConst.PAIR, quantity, buyPrice, TypeOrder.sell));
+//                if (!createResultDto.getResult()) {
+//                    throw new RuntimeException("Ошибка продажи по ордеру: " + createResultDto.getError());
+//                }
                 //todo  сохранить в бд "актуальные ордера" order_id и текущую цену buyPrice, TypeOrder.sell
 
                 try {
-                    System.out.println(String.format(" !!! sellCurrencyBase. Ждем %1$s мин после продажи", IExConst.ORDER_LIFE));
+                    Logs.info(String.format(" !!! sellCurrencyBase. Ждем %1$s мин после продажи", IExConst.ORDER_LIFE));
                     Thread.sleep(1000 * 60 * IExConst.ORDER_LIFE);
                 } catch (InterruptedException ignore) {
                 }
@@ -161,7 +149,7 @@ public class Main {
 
         if (trendType == TrendType.upward) {
             try {
-                System.out.println(String.format(" - buyCurrencyBase. Ждем 7 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
+                Logs.info(String.format(" - buyCurrencyBase. Ждем 7 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
                 Thread.sleep(1000 * 60 * 7);            // 7 min
             } catch (InterruptedException ignore) {
             }
@@ -170,7 +158,7 @@ public class Main {
         if (trendType == TrendType.downward) {
             if (lastTrendType != TrendType.upward) {
                 try {
-                    System.out.println(String.format(" - buyCurrencyBase. Ждем 7 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
+                    Logs.info(String.format(" - buyCurrencyBase. Ждем 7 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
                     Thread.sleep(1000 * 60 * 7);            // 9 min
                 } catch (InterruptedException ignore) {
                 }
@@ -194,7 +182,7 @@ public class Main {
 
         if (trendType == TrendType.downward) {
             try {
-                System.out.println(String.format(" - sellCurrencyBase. Ждем 7 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
+                Logs.info(String.format(" - sellCurrencyBase. Ждем 7 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
                 Thread.sleep(1000 * 60 * 7);            // 7 min
             } catch (InterruptedException ignore) {
             }
@@ -203,7 +191,7 @@ public class Main {
         if (trendType == TrendType.upward) {
             if (lastTrendType != TrendType.downward) {
                 try {
-                    System.out.println(String.format(" - sellCurrencyBase. Ждем 9 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
+                    Logs.info(String.format(" - sellCurrencyBase. Ждем 9 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
                     Thread.sleep(1000 * 60 * 9);            // 9 min
                 } catch (InterruptedException ignore) {
                 }

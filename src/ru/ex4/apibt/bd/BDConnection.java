@@ -1,5 +1,7 @@
 package ru.ex4.apibt.bd;
 
+import ru.ex4.apibt.log.Logs;
+
 import java.sql.*;
 
 public class BDConnection {
@@ -25,15 +27,15 @@ public class BDConnection {
             while(rs.next())
             {
                 // read the result set
-                System.out.println("name = " + rs.getString("name"));
-                System.out.println("id = " + rs.getInt("id"));
+                Logs.info("name = " + rs.getString("name"));
+                Logs.info("id = " + rs.getInt("id"));
             }
         }
         catch(SQLException e)
         {
             // if the error message is "out of memory",
             // it probably means no database file is found
-            System.err.println(e.getMessage());
+            Logs.error(e.getMessage());
         }
         finally
         {
@@ -45,7 +47,7 @@ public class BDConnection {
             catch(SQLException e)
             {
                 // connection close failed.
-                System.err.println(e);
+                Logs.error(e.getMessage());
             }
         }
     }
