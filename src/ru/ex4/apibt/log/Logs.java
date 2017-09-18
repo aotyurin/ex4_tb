@@ -9,7 +9,7 @@ public class Logs {
     public static void info(String message) {
 
         Date date = new Date();
-        String str = new SimpleDateFormat(DATE_FORMAT).format(date) + "  \t INFO  - [ \t\t " + message + " ]";
+        String str = new SimpleDateFormat(DATE_FORMAT).format(date) + "  \t INFO   - [ \t\t " + message + " ]";
 
         System.out.println(str);
     }

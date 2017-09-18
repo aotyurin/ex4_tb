@@ -1,6 +1,8 @@
 package ru.ex4.apibt;
 
 
+import ru.ex4.apibt.bd.JdbcTemplate;
+import ru.ex4.apibt.dao.InitBaseDao;
 import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.factory.ExFactory;
 import ru.ex4.apibt.log.Logs;
@@ -15,9 +17,13 @@ public class Main {
     static ExFactory exFactory = ExFactory.exFactoryInstance();
 
     public static void main(String[] args) throws IOException {
-        Logs.info("hello");
+        Logs.info("  ---------- hello  ---------- ");
+
+        // init bd
+        initBD();
 
         //region проверяем котируемую валюту и покупаем
+        Logs.info(String.format("Проверяем котируемую валюту %1$s и покупаем ...", IExConst.CURRENCY_QUOTED));
         PairSettingDto pairSettingByPair = PairSettingsService.getPairSettingByPair(IExConst.PAIR);
         TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
         if (tickerDtoByPair != null && pairSettingByPair != null) {
@@ -35,6 +41,7 @@ public class Main {
         //endregion
 
         //region проверяем базовую валюту и продаем
+        Logs.info(String.format("Проверяем базовую валюту %1$s и продаем ...", IExConst.CURRENCY_BASE));
         float balances_base = UserInfoService.getBalances(IExConst.CURRENCY_BASE);
         if (balances_base <= 0) {
             Logs.error(String.format("Недостаточно валюты для продажи. Баланс %1$s %2$s.",
@@ -49,18 +56,17 @@ public class Main {
         //region проверяем ордера
 
         //// task_1
-
+        Logs.info("Проверяем ордера ... ");
         List<UserOpenOrderDto.UserOpenOrder> userOpenOrderList = UserOpenOrderService.getUserOpenOrderByPair(IExConst.PAIR);
         if (userOpenOrderList != null) {
             for (UserOpenOrderDto.UserOpenOrder userOpenOrder : userOpenOrderList) {
-                Logs.info(String.format("userOpenOrderByPair. Имеется открытый ордер. %1$s", userOpenOrder));
+                Logs.info(String.format(" - имеется открытый ордер. %1$s", userOpenOrder));
 
                 tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
-
                 if (tickerDtoByPair != null) {
                     // отклонение цены от текущей в процентах
                     int deviationPrice = Math.round((userOpenOrder.getPrice() - tickerDtoByPair.getBuyPrice()) / tickerDtoByPair.getBuyPrice() * 100);
-                    Logs.info(" - отклонение цены от текущей в процентах: " + deviationPrice);
+                    Logs.info(" - отклонение цены ордера от текущей в процентах: " + deviationPrice);
 
                     Calendar orderCreated = Calendar.getInstance();
                     orderCreated.setTime(userOpenOrder.getCreated());
@@ -83,9 +89,16 @@ public class Main {
         //endregion
 
 
-        Logs.info(" ---------- end ------------- ");
+        Logs.info("  ---------- end ------------- ");
     }
 
+    private static void initBD() throws IOException {
+        InitBaseDao initBaseDao = new InitBaseDao();
+
+        initBaseDao.init();
+        initBaseDao.fillUserInfo();
+        initBaseDao.fillPairSetting();
+    }
 
     private static void buyCurrencyBase(float balances) throws IOException {
         Logs.info(String.format("buyCurrencyBase. Пытаемся купить %1$s %2$s", IExConst.CURRENCY_BASE, balances));
