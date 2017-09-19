@@ -39,20 +39,36 @@ public class JdbcTemplate {
         executeUpdate(sql, null);
     }
 
-    public void executeUpdate(String sql, PreparedParamsSetter preparedStatementSetter) {
-        String sql2 = replaceParam(sql, preparedStatementSetter);
-        run(sql2);
-    }
-
-
-    private void run(String sql2) {
+    public void executeUpdate(String sql, PreparedParamsSetter preparedParamsSetter) {
         try {
-            Statement statement = connection.createStatement();
-            statement.setQueryTimeout(30);
-            statement.executeUpdate(sql2);
+            String sql2 = replaceParam(sql, preparedParamsSetter);
+            run(sql2);
         } catch (SQLException e) {
             Logs.error(e.getMessage());
         }
+    }
+
+    public ResultSet executeQuery(String sql, PreparedParamsSetter preparedParamsSetter) {
+        try {
+            String sql2 = replaceParam(sql, preparedParamsSetter);
+            return runResultSet(sql2);
+        } catch (SQLException e) {
+            Logs.error(e.getMessage());
+        }
+        return null;
+    }
+
+
+    private void run(String sql2) throws SQLException {
+            Statement statement = connection.createStatement();
+            statement.setQueryTimeout(30);
+            statement.executeUpdate(sql2);
+    }
+
+    private ResultSet runResultSet(String sql2) throws SQLException {
+            Statement statement = connection.createStatement();
+            statement.setQueryTimeout(30);
+            return statement.executeQuery(sql2);
     }
 
     private String replaceParam(String sql, PreparedParamsSetter preparedParamsSetter) {
@@ -60,10 +76,11 @@ public class JdbcTemplate {
             return sql;
         }
 
-        for (PreparedParams preparedParams : preparedParamsSetter.getPreparedParams()) {
+        for (PreparedParams preparedParams : preparedParamsSetter.getPreparedParamses()) {
             sql = sql.replace(":" + preparedParams.getName(), preparedParams.getValue());
         }
         return sql;
     }
+
 
 }

@@ -14,7 +14,7 @@ public class UserOrderDao {
         try {
             this.jdbcTemplate = JdbcTemplate.getInstance();
         } catch (SQLException e) {
-            Logs.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 

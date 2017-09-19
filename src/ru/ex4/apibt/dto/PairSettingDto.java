@@ -29,6 +29,15 @@ public class PairSettingDto {
     private PairSettingDto() {
     }
 
+    public PairSettingDto(String pair, float minQuantity, float maxQuantity, float minPrice, float maxPrice, float minAmount, float maxAmount) {
+        this.pair = pair;
+        this.minQuantity = minQuantity;
+        this.maxQuantity = maxQuantity;
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
+        this.minAmount = minAmount;
+        this.maxAmount = maxAmount;
+    }
 
     public String getPair() {
         return pair;
