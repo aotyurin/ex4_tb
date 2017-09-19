@@ -1,7 +1,7 @@
 package ru.ex4.apibt.service;
 
 import ru.ex4.apibt.dto.TickerDto;
-import ru.ex4.apibt.factory.ExFactory;
+import ru.ex4.apibt.extermod.ExFactory;
 
 import java.io.IOException;
 import java.util.List;

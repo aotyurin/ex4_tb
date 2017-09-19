@@ -17,7 +17,7 @@ public class InitBaseDao {
         try {
             this.jdbcTemplate = JdbcTemplate.getInstance();
         } catch (SQLException e) {
-            Logs.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -32,7 +32,7 @@ public class InitBaseDao {
         String sqlClean__User_Info_Reserved = "DELETE FROM User_Info_Reserved;";
         jdbcTemplate.executeUpdate(sqlClean__User_Info_Reserved);
 
-        String sqlCreate__Pair_Setting = "CREATE TABLE IF NOT EXISTS Pair_Setting(pair TEXT, maxAmount REAL, maxPrice REAL, maxQuantity REAL, minAmount REAL, minPrice REAL, minQuantity REAL);";
+        String sqlCreate__Pair_Setting = "CREATE TABLE IF NOT EXISTS Pair_Setting(pair TEXT, minQuantity REAL, maxQuantity REAL, minPrice REAL, maxPrice REAL, minAmount REAL, maxAmount REAL);";
         jdbcTemplate.executeUpdate(sqlCreate__Pair_Setting);
         String sqlClean__Pair_Setting = "DELETE FROM Pair_Setting;";
         jdbcTemplate.executeUpdate(sqlClean__Pair_Setting);
@@ -71,14 +71,14 @@ public class InitBaseDao {
         for (PairSettingDto pairSetting : pairSettings) {
             PreparedParamsSetter prs = new PreparedParamsSetter();
             prs.setValues("pair", pairSetting.getPair());
-            prs.setValues("maxAmount", pairSetting.getMaxAmount());
-            prs.setValues("maxPrice", pairSetting.getMaxPrice());
-            prs.setValues("maxQuantity", pairSetting.getMaxQuantity());
-            prs.setValues("minAmount", pairSetting.getMinAmount());
-            prs.setValues("minPrice", pairSetting.getMinPrice());
             prs.setValues("minQuantity", pairSetting.getMinQuantity());
+            prs.setValues("maxQuantity", pairSetting.getMaxQuantity());
+            prs.setValues("minPrice", pairSetting.getMinPrice());
+            prs.setValues("maxPrice", pairSetting.getMaxPrice());
+            prs.setValues("minAmount", pairSetting.getMinAmount());
+            prs.setValues("maxAmount", pairSetting.getMaxAmount());
 
-            jdbcTemplate.executeUpdate("INSERT INTO Pair_Setting VALUES (:pair, :maxAmount, :maxPrice, :maxQuantity, :minAmount, :minPrice, :minQuantity);", prs);
+            jdbcTemplate.executeUpdate("INSERT INTO Pair_Setting VALUES (:pair, :minQuantity, :maxQuantity, :minPrice, :maxPrice, :minAmount, :maxAmount);", prs);
         }
 
     }

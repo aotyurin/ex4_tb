@@ -9,16 +9,16 @@ import java.util.List;
 
 public class PreparedParamsSetter {
 
-    private List<PreparedParams> preparedParams = new ArrayList<>();
+    List<PreparedParams> preparedParamsList = new ArrayList<>();
 
     public void setValues(String name, Object value) {
         Assert.assertNotNull(name);
         Assert.assertNotNull(value);
 
-        preparedParams.add(new PreparedParams(name, value));
+        preparedParamsList.add(new PreparedParams(name, value));
     }
 
-    List<PreparedParams> getPreparedParams() {
-        return preparedParams;
+    public List<PreparedParams> getPreparedParamsList() {
+        return preparedParamsList;
     }
 }

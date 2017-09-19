@@ -3,7 +3,7 @@ package ru.ex4.apibt.service;
 import ru.ex4.apibt.dao.InitBaseDao;
 import ru.ex4.apibt.dto.PairSettingDto;
 import ru.ex4.apibt.dto.UserInfoDto;
-import ru.ex4.apibt.factory.ExFactory;
+import ru.ex4.apibt.extermod.ExFactory;
 import ru.ex4.apibt.log.Logs;
 
 import java.io.IOException;

@@ -5,6 +5,7 @@ import ru.ex4.apibt.bd.PreparedParamsSetter;
 import ru.ex4.apibt.dto.OrderCreateDto;
 import ru.ex4.apibt.log.Logs;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserOrderDao {
@@ -14,7 +15,7 @@ public class UserOrderDao {
         try {
             this.jdbcTemplate = JdbcTemplate.getInstance();
         } catch (SQLException e) {
-            Logs.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -29,6 +30,31 @@ public class UserOrderDao {
         prs.setValues("currPrice", currPrice);
 
         jdbcTemplate.executeUpdate("INSERT INTO User_Order VALUES (:orderId, :pair, :quantity, :price, :type, :currPrice);", prs);
+    }
+
+    public float getPriceByOrder(String orderId) {
+        try {
+            String sql = "SELECT\n" +
+                    "  orderId,\n" +
+                    "  pair,\n" +
+                    "  quantity,\n" +
+                    "  price,\n" +
+                    "  type,\n" +
+                    "  currPrice\n" +
+                    "FROM User_Order\n" +
+                    "WHERE orderId = :orderId ;";
+
+            PreparedParamsSetter prs = new PreparedParamsSetter();
+            prs.setValues("orderId", orderId);
+
+            ResultSet resultSet = jdbcTemplate.executeQuery(sql, prs);
+            while (resultSet.next()) {
+                return resultSet.getFloat("currPrice");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public void deleteByOrderId(String orderId) {

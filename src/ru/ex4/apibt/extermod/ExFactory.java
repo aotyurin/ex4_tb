@@ -1,10 +1,8 @@
-package ru.ex4.apibt.factory;
+package ru.ex4.apibt.extermod;
 
-import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.MainProperties;
 import ru.ex4.apibt.dto.*;
-import ru.ex4.apibt.factory.processing.JSONProcessor;
-import ru.ex4.apibt.requestPlugin.ExRequest;
+import ru.ex4.apibt.extermod.processing.JSONProcessor;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -13,7 +11,7 @@ import java.util.Properties;
 
 public class ExFactory {
     //region fields
-    private static ExRequest exRequest;
+    private static RequestPlugin requestPlugin;
     //endregion
 
     //region ctor
@@ -21,7 +19,7 @@ public class ExFactory {
     }
 
     public static ExFactory exFactoryInstance() {
-        if (exRequest == null) {
+        if (requestPlugin == null) {
             final String path = "main.properties";
 
             Properties properties = MainProperties.getProperties(path);
@@ -33,7 +31,7 @@ public class ExFactory {
                     throw new RuntimeException("Значения в " + path + " заданы не верно");
                 }
 
-                exRequest = new ExRequest(url, key, secret);
+                requestPlugin = new RequestPlugin(url, key, secret);
             }
         }
         return new ExFactory();
@@ -44,13 +42,13 @@ public class ExFactory {
 
     //      Cписок валют
     public List getCurrency() throws IOException {
-        String currency = exRequest.get("currency", null);
+        String currency = requestPlugin.get("currency", null);
         return new JSONProcessor<List>().processSimple(List.class, currency);
     }
 
     //      Настройки валютных пар
     public List<PairSettingDto> getPairSettings() throws IOException {
-        String pair_settings = exRequest.get("pair_settings", null);
+        String pair_settings = requestPlugin.get("pair_settings", null);
         return new JSONProcessor<PairSettingDto>().process(PairSettingDto.class, pair_settings);
     }
 
@@ -61,13 +59,13 @@ public class ExFactory {
         if (limit != null && limit <= 1000) {
             arguments.put("limit", String.valueOf(limit));
         }
-        String order_book = exRequest.get("order_book", arguments);
+        String order_book = requestPlugin.get("order_book", arguments);
         return new JSONProcessor<OrderBookDto>().process(OrderBookDto.class, order_book);
     }
 
     //      Cтатистика цен и объемов торгов по валютным парам
     public List<TickerDto> getTicker() throws IOException {
-        String ticker = exRequest.get("ticker", null);
+        String ticker = requestPlugin.get("ticker", null);
         return new JSONProcessor<TickerDto>().process(TickerDto.class, ticker);
     }
 
@@ -76,19 +74,19 @@ public class ExFactory {
         HashMap<String, String> arguments = new HashMap<>();
         arguments.put("pair", pair);
 
-        String trades = exRequest.get("trades", arguments);
+        String trades = requestPlugin.get("trades", arguments);
         return new JSONProcessor<TradeDto>().process(TradeDto.class, trades);
     }
 
     //      Получение информации об аккаунте пользователя
     public UserInfoDto getUserInfo() throws IOException {
-        String userInfo = exRequest.post("user_info", null);
+        String userInfo = requestPlugin.post("user_info", null);
         return new JSONProcessor<UserInfoDto>().processSimple(UserInfoDto.class, userInfo);
     }
 
     //      Получение списока открытых ордеров пользователя
     public List<UserOpenOrderDto> getUserOpenOrders() throws IOException {
-        String userOpenOrders = exRequest.post("user_open_orders", null);
+        String userOpenOrders = requestPlugin.post("user_open_orders", null);
         return new JSONProcessor<UserOpenOrderDto>().process(UserOpenOrderDto.class, userOpenOrders);
     }
 
@@ -101,7 +99,7 @@ public class ExFactory {
             arguments.put("limit", String.valueOf(limit));
         }
 
-        String userTrades = exRequest.post("user_trades", arguments);
+        String userTrades = requestPlugin.post("user_trades", arguments);
         return new JSONProcessor<UserTradeDto>().process(UserTradeDto.class, userTrades);
     }
 
@@ -113,7 +111,7 @@ public class ExFactory {
         arguments.put("price", String.valueOf(orderCreateDto.getPrice()));
         arguments.put("type", orderCreateDto.getType().name());
 
-        String orderCreated = exRequest.post("order_create", arguments);
+        String orderCreated = requestPlugin.post("order_create", arguments);
         return new JSONProcessor<OrderCreateResultDto>().processSimple(OrderCreateResultDto.class, orderCreated);
     }
 
@@ -122,7 +120,7 @@ public class ExFactory {
         HashMap<String, String> arguments = new HashMap<>();
         arguments.put("order_id", orderId);
 
-        String orderCanceled = exRequest.post("order_cancel", arguments);
+        String orderCanceled = requestPlugin.post("order_cancel", arguments);
         return new JSONProcessor<OrderCreateResultDto>().processSimple(OrderCreateResultDto.class, orderCanceled);
     }
 
@@ -132,7 +130,7 @@ public class ExFactory {
         arguments.put("pair", pair);
         arguments.put("quantity", String.valueOf(quantity));
 
-        return  exRequest.post("required_amount", arguments);
+        return  requestPlugin.post("required_amount", arguments);
     }
 
     //endregion
