@@ -36,22 +36,20 @@ public class PairSettingDao {
             prs.setValues("pair", pair);
 
             ResultSet resultSet = jdbcTemplate.executeQuery(sql, prs);
-            if (resultSet != null) {
-                List<PairSettingDto> pairSettingDtos = new ArrayList<>();
-                while (resultSet.next()) {
-                    pairSettingDtos.add(new PairSettingDto(resultSet.getString("pair"),
-                            resultSet.getFloat("minQuantity"),
-                            resultSet.getFloat("maxQuantity"),
-                            resultSet.getFloat("minPrice"),
-                            resultSet.getFloat("maxPrice"),
-                            resultSet.getFloat("minAmount"),
-                            resultSet.getFloat("maxAmount")));
-                }
-                if (pairSettingDtos.size() > 1 || pairSettingDtos.isEmpty()) {
-                    throw new RuntimeException("pairSetting sql: записей не найдено или их более одной");
-                }
-                return pairSettingDtos.get(0);
+            List<PairSettingDto> pairSettingDtos = new ArrayList<>();
+            while (resultSet.next()) {
+                pairSettingDtos.add(new PairSettingDto(resultSet.getString("pair"),
+                        resultSet.getFloat("minQuantity"),
+                        resultSet.getFloat("maxQuantity"),
+                        resultSet.getFloat("minPrice"),
+                        resultSet.getFloat("maxPrice"),
+                        resultSet.getFloat("minAmount"),
+                        resultSet.getFloat("maxAmount")));
             }
+            if (pairSettingDtos.size() > 1 || pairSettingDtos.isEmpty()) {
+                throw new RuntimeException("pairSetting sql: записей не найдено или их более одной");
+            }
+            return pairSettingDtos.get(0);
         } catch (SQLException e) {
             e.printStackTrace();
         }
