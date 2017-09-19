@@ -1,6 +1,5 @@
-package ru.ex4.apibt.factory.processing;
+package ru.ex4.apibt.extermod.processing;
 
-import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;

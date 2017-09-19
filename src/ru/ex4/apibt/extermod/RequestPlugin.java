@@ -1,4 +1,4 @@
-package ru.ex4.apibt.requestPlugin;
+package ru.ex4.apibt.extermod;
 
 import okhttp3.*;
 import org.apache.commons.codec.binary.Hex;
@@ -15,24 +15,24 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExRequest {
+class RequestPlugin {
     //      инкрементное число
     private static long _nonce;
     private String _url;
     private String _key;
     private String _secret;
 
-    private ExRequest() {
+    private RequestPlugin() {
     }
 
-    public ExRequest(String url, String key, String secret) {
+    RequestPlugin(String url, String key, String secret) {
         _nonce = System.nanoTime();
         _url = url;
         _key = key;
         _secret = secret;
     }
 
-    public final String post(String method, Map<String, String> arguments) {
+    final String post(String method, Map<String, String> arguments) {
         Mac mac;
         SecretKeySpec key;
         String sign;
@@ -100,7 +100,7 @@ public class ExRequest {
         }
     }
 
-    public final String get(String method, Map<String, String> arguments) {
+    final String get(String method, Map<String, String> arguments) {
         String path = _url + method + "/?" + joinArguments(arguments);
 
         OkHttpClient client = new OkHttpClient();
