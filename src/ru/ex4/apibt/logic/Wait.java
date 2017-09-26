@@ -58,7 +58,7 @@ public class Wait {
     }
 
 
-    private static void sleep(long minutes, String msg) {
+    public static void sleep(long minutes, String msg) {
         try {
             Logs.info(msg);
             Thread.sleep(1000 * 60 * minutes);

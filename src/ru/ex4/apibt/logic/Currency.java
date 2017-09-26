@@ -1,10 +1,7 @@
 package ru.ex4.apibt.logic;
 
 import ru.ex4.apibt.IExConst;
-import ru.ex4.apibt.dto.OrderCreateDto;
-import ru.ex4.apibt.dto.PairSettingDto;
-import ru.ex4.apibt.dto.TickerDto;
-import ru.ex4.apibt.dto.TypeOrder;
+import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.service.OrderService;
 import ru.ex4.apibt.service.PairSettingsService;
@@ -12,6 +9,9 @@ import ru.ex4.apibt.service.TickerService;
 import ru.ex4.apibt.service.UserInfoService;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 public class Currency {
     /**
@@ -65,15 +65,9 @@ public class Currency {
                 Logs.info(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity, sellPrice));
                 Logs.info("Текущие цены и объемы торгов: " + tickerDtoByPair);
                 OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, sellPrice, TypeOrder.buy);
-                String orderId = OrderService.orderCreate(orderCreateDto);
+                OrderService.orderCreate(orderCreateDto, sellPrice);
 
-                OrderService.save(orderId, orderCreateDto, sellPrice);
-
-                try {
-                    Logs.info(String.format(" !!! buyBase. Ждем %1$s мин после покупки", IExConst.ORDER_LIFE));
-                    Thread.sleep(1000 * 60 * IExConst.ORDER_LIFE);
-                } catch (InterruptedException ignore) {
-                }
+                Wait.sleep(IExConst.ORDER_LIFE, String.format(" !!! buyBase. Ждем %1$s мин после покупки", IExConst.ORDER_LIFE));
             }
         }
     }
@@ -89,16 +83,66 @@ public class Currency {
                 Logs.info(String.format("Выставлен ордер на продажу: кол-во %1$s, цена %2$s", quantity, buyPrice));
                 Logs.info("Текущие цены и объемы торгов: " + tickerDtoByPair);
                 OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, buyPrice, TypeOrder.sell);
-                String orderId = OrderService.orderCreate(orderCreateDto);
+                OrderService.orderCreate(orderCreateDto, buyPrice);
 
-                OrderService.save(orderId, orderCreateDto, buyPrice);
+                Wait.sleep(IExConst.ORDER_LIFE, String.format(" !!! sellBase. Ждем %1$s мин после продажи", IExConst.ORDER_LIFE));
+            }
+        }
+    }
 
-                try {
-                    Logs.info(String.format(" !!! sellBase. Ждем %1$s мин после продажи", IExConst.ORDER_LIFE));
-                    Thread.sleep(1000 * 60 * IExConst.ORDER_LIFE);
-                } catch (InterruptedException ignore) {
+
+    public static void checkOrder() throws IOException {
+        Logs.info("Проверяем ордера ... ");
+        List<UserOpenOrderDto.UserOpenOrder> userOpenOrderList = OrderService.getOpenOrderByPair(IExConst.PAIR);
+        for (UserOpenOrderDto.UserOpenOrder userOpenOrder : userOpenOrderList) {
+            Logs.info(String.format(" - имеется открытый ордер. %1$s", userOpenOrder));
+
+            TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+            if (tickerDtoByPair != null) {
+                // отклонение цены от текущей в процентах
+                int deviationPrice = Math.round((userOpenOrder.getPrice() - tickerDtoByPair.getBuyPrice()) / tickerDtoByPair.getBuyPrice() * 100);
+                Logs.info(" - отклонение цены ордера от текущей в процентах: " + deviationPrice);
+
+                Calendar orderCreated = Calendar.getInstance();
+                orderCreated.setTime(userOpenOrder.getCreated());
+                Calendar current = Calendar.getInstance();
+                current.setTime(new Date());
+
+                if (deviationPrice >= 5 || orderCreated.get(Calendar.DAY_OF_YEAR) != current.get(Calendar.DAY_OF_YEAR)) {
+                    Logs.info("Отмена ордера: " + userOpenOrder.getOrderId());
+                    OrderService.orderCancel(userOpenOrder.getOrderId());
+                }
+            } else
+            if (userOpenOrder.getType() == TypeOrder.sell) {
+                if (Wait.upwardTrend(null)) {
+                    TickerDto tickerDtoByPair2 = TickerService.getTickerDtoByPair(IExConst.PAIR);
+                    if (tickerDtoByPair2 != null) {
+                        float sellPrice = tickerDtoByPair2.getSellPrice();
+                        float buyPrice = tickerDtoByPair2.getBuyPrice();
+
+                        float lastPriceByOrder = OrderService.getLastPriceByOrder(userOpenOrder.getOrderId());
+                        if (lastPriceByOrder > 0 && sellPrice > lastPriceByOrder) {
+                            float deviationPrice = (userOpenOrder.getPrice() - sellPrice) / sellPrice * 100;
+                            if (deviationPrice <= 0.15 && deviationPrice > 0) {
+                                OrderService.orderCancel(userOpenOrder.getOrderId());
+
+                                float quantity = UserInfoService.getBalance(IExConst.CURRENCY_BASE);
+                                float priceProfit = buyPrice + buyPrice * IExConst.STOCK_FEE + buyPrice * IExConst.PROFIT_MARKUP / 10;
+                                OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, priceProfit, TypeOrder.sell);
+                                OrderService.orderCreate(orderCreateDto, sellPrice);
+
+                                Wait.sleep(14, " - checkOrder. Ждем 14 мин после пересоздания, downwardTrend ");
+                                // // ***
+                            }
+                        }
+                    }
+                } else {
+                    Wait.sleep(9, " - checkOrder. Ждем 9 мин, downwardTrend ");
+                    checkOrder();
                 }
             }
         }
     }
+
+
 }

@@ -20,19 +20,19 @@ public class UserOrderDao {
     }
 
     // currPrice - цена, на момент создания ордера
-    public void save(String orderId, OrderCreateDto orderCreateDto, float currPrice) {
+    public void save(String orderId, OrderCreateDto orderCreateDto, float lastPrice) {
         PreparedParamsSetter prs = new PreparedParamsSetter();
         prs.setValues("orderId", orderId);
         prs.setValues("pair", orderCreateDto.getPair());
         prs.setValues("quantity", orderCreateDto.getQuantity());
         prs.setValues("price", orderCreateDto.getPrice());
         prs.setValues("type", orderCreateDto.getType().name());
-        prs.setValues("currPrice", currPrice);
+        prs.setValues("lastPrice", lastPrice);
 
-        jdbcTemplate.executeUpdate("INSERT INTO User_Order VALUES (:orderId, :pair, :quantity, :price, :type, :currPrice);", prs);
+        jdbcTemplate.executeUpdate("INSERT OR REPLACE INTO User_Order VALUES (:orderId, :pair, :quantity, :price, :type, :lastPrice);", prs);
     }
 
-    public float getPriceByOrder(String orderId) {
+    public float getLastPriceByOrder(String orderId) {
         try {
             String sql = "SELECT\n" +
                     "  orderId,\n" +
@@ -40,7 +40,7 @@ public class UserOrderDao {
                     "  quantity,\n" +
                     "  price,\n" +
                     "  type,\n" +
-                    "  currPrice\n" +
+                    "  lastPrice\n" +
                     "FROM User_Order\n" +
                     "WHERE orderId = :orderId ;";
 
@@ -49,7 +49,7 @@ public class UserOrderDao {
 
             ResultSet resultSet = jdbcTemplate.executeQuery(sql, prs);
             while (resultSet.next()) {
-                return resultSet.getFloat("currPrice");
+                return resultSet.getFloat("lastPrice");
             }
         } catch (SQLException e) {
             e.printStackTrace();

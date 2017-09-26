@@ -8,6 +8,8 @@ import ru.ex4.apibt.extermod.ExFactory;
 import ru.ex4.apibt.log.Logs;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class OrderService {
@@ -15,14 +17,15 @@ public class OrderService {
     private static ExFactory exFactory = ExFactory.exFactoryInstance();
 
 
-    public static String orderCreate(OrderCreateDto orderCreateDto) throws IOException {
+    public static String orderCreate(OrderCreateDto orderCreateDto, float lastPrice) throws IOException {
         OrderCreateResultDto orderCreateResultDto = exFactory.orderCreate(orderCreateDto);
         Logs.info(orderCreateResultDto.toString());
-        if (orderCreateResultDto.getResult()) {
-            return orderCreateResultDto.getOrderId();
-        } else {
+        if (!orderCreateResultDto.getResult()) {
             throw new RuntimeException
                     ("Ошибка создания ордера !!!" + orderCreateResultDto.getError());
+        } else {
+            save(orderCreateResultDto.getOrderId(), orderCreateDto, lastPrice);
+            return orderCreateResultDto.getOrderId();
         }
     }
 
@@ -31,6 +34,8 @@ public class OrderService {
         Logs.info(orderCreateResultDto.toString());
         if (!orderCreateResultDto.getResult()) {
             throw new RuntimeException("Ошибка отмены ордера: " + orderCreateResultDto.getError());
+        } else {
+            deleteByOrderId(orderId);
         }
     }
 
@@ -43,22 +48,23 @@ public class OrderService {
                 }
             }
         }
-        return null;
+        deleteAll();
+        return Collections.emptyList();
     }
 
-    public static void save(String orderId, OrderCreateDto orderCreateDto, float currPrice) {
-        userOrderDao.save(orderId, orderCreateDto, currPrice);
+    public static float getLastPriceByOrder(String orderId) {
+        return userOrderDao.getLastPriceByOrder(orderId);
     }
 
-    public static float getPriceByOrder(String orderId) {
-        return userOrderDao.getPriceByOrder(orderId);
+    private static void save(String orderId, OrderCreateDto orderCreateDto, float lastPrice) {
+        userOrderDao.save(orderId, orderCreateDto, lastPrice);
     }
 
-    public static void deleteByOrderId(String orderId) {
+    private static void deleteByOrderId(String orderId) {
         userOrderDao.deleteByOrderId(orderId);
     }
 
-    public static void deleteAll() {
+    private static void deleteAll() {
         userOrderDao.deleteAll();
     }
 

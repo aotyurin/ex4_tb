@@ -1,6 +1,8 @@
 package ru.ex4.apibt.service;
 
 import ru.ex4.apibt.dao.InitBaseDao;
+import ru.ex4.apibt.dao.PairSettingDao;
+import ru.ex4.apibt.dao.UserInfoDao;
 import ru.ex4.apibt.dto.PairSettingDto;
 import ru.ex4.apibt.dto.UserInfoDto;
 import ru.ex4.apibt.extermod.ExFactory;
@@ -14,6 +16,8 @@ public class InitBaseService {
 
     public void init() {
         InitBaseDao initBaseDao = new InitBaseDao();
+        PairSettingDao pairSettingDao = new PairSettingDao();
+        UserInfoDao userInfoDao = new UserInfoDao();
 
         try {
             Logs.info("init bd ...");
@@ -23,11 +27,11 @@ public class InitBaseService {
 
             Logs.info(" - заполняем данные пользователя");
             UserInfoDto userInfo = exFactory.getUserInfo();
-            initBaseDao.fillUserInfo(userInfo);
+            userInfoDao.fillUserInfo(userInfo);
 
             Logs.info(" - заполняем настройки валютных пар");
             List<PairSettingDto> pairSettings = exFactory.getPairSettings();
-            initBaseDao.fillPairSetting(pairSettings);
+            pairSettingDao.fillPairSetting(pairSettings);
         } catch (IOException e) {
             Logs.error(e.getMessage());
         }

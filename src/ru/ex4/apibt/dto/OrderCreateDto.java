@@ -5,7 +5,7 @@ public class OrderCreateDto {
     private String pair;
     //    кол-во по ордеру
     private float quantity;
-    //    цена по ордеру
+    //    цена по ордеру (страйк)
     private float price;
     //    тип ордера
     private TypeOrder type;
