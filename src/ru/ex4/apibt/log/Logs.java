@@ -22,4 +22,7 @@ public class Logs {
     }
 
 
+    public static void sql(String message) {
+        System.out.println("sql: " + message.replace("\n", " "));
+    }
 }

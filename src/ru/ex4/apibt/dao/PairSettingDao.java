@@ -56,4 +56,20 @@ public class PairSettingDao {
 
         return null;
     }
+
+    public void fillPairSetting(List<PairSettingDto> pairSettings) {
+        for (PairSettingDto pairSetting : pairSettings) {
+            PreparedParamsSetter prs = new PreparedParamsSetter();
+            prs.setValues("pair", pairSetting.getPair());
+            prs.setValues("minQuantity", pairSetting.getMinQuantity());
+            prs.setValues("maxQuantity", pairSetting.getMaxQuantity());
+            prs.setValues("minPrice", pairSetting.getMinPrice());
+            prs.setValues("maxPrice", pairSetting.getMaxPrice());
+            prs.setValues("minAmount", pairSetting.getMinAmount());
+            prs.setValues("maxAmount", pairSetting.getMaxAmount());
+
+            jdbcTemplate.executeUpdate("INSERT OR REPLACE INTO Pair_Setting VALUES (:pair, :minQuantity, :maxQuantity, :minPrice, :maxPrice, :minAmount, :maxAmount);", prs);
+        }
+
+    }
 }

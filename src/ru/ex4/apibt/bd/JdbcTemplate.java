@@ -57,12 +57,14 @@ public class JdbcTemplate {
     private void run(String sql2) throws SQLException {
         Statement statement = connection.createStatement();
         statement.setQueryTimeout(30);
+        Logs.sql(sql2);
         statement.executeUpdate(sql2);
     }
 
     private ResultSet runResultSet(String sql2) throws SQLException {
         Statement statement = connection.createStatement();
         statement.setQueryTimeout(30);
+        Logs.sql(sql2);
         return statement.executeQuery(sql2);
     }
 

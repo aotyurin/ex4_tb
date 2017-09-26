@@ -2,6 +2,7 @@ package ru.ex4.apibt.dao;
 
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
+import ru.ex4.apibt.dto.UserInfoDto;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -72,5 +73,28 @@ public class UserInfoDao {
 
         return 0;
     }
+
+    public void fillUserInfo(UserInfoDto userInfo) {
+        String uid = userInfo.getUid();
+
+        ArrayList<UserInfoDto.Balance> balances = userInfo.getBalances();
+        for (UserInfoDto.Balance balance : balances) {
+            PreparedParamsSetter prs = new PreparedParamsSetter();
+            prs.setValues("uid", uid);
+            prs.setValues("currency", balance.getCurrency());
+            prs.setValues("amount", balance.getAmount());
+            jdbcTemplate.executeUpdate("INSERT INTO User_Info_Balance VALUES (:uid, :currency, :amount);", prs);
+        }
+
+        ArrayList<UserInfoDto.Balance> reserved = userInfo.getReserved();
+        for (UserInfoDto.Balance balance : reserved) {
+            PreparedParamsSetter prs = new PreparedParamsSetter();
+            prs.setValues("uid", uid);
+            prs.setValues("currency", balance.getCurrency());
+            prs.setValues("amount", balance.getAmount());
+            jdbcTemplate.executeUpdate("INSERT INTO User_Info_Reserved VALUES (:uid, :currency, :amount);", prs);
+        }
+    }
+
 
 }
