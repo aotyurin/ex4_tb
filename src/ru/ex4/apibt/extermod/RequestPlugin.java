@@ -32,7 +32,7 @@ class RequestPlugin {
         _secret = secret;
     }
 
-    final String post(String method, Map<String, String> arguments) {
+    final synchronized String  post(String method, Map<String, String> arguments) {
         Mac mac;
         SecretKeySpec key;
         String sign;
@@ -100,7 +100,7 @@ class RequestPlugin {
         }
     }
 
-    final String get(String method, Map<String, String> arguments) {
+    final synchronized String get(String method, Map<String, String> arguments) {
         String path = _url + method + "/?" + joinArguments(arguments);
 
         OkHttpClient client = new OkHttpClient();

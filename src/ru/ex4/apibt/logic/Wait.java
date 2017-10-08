@@ -12,11 +12,11 @@ public class Wait {
         TrendType trendType = TrendService.getTrendType(IExConst.PAIR);
         if (firstTrendType == null) {
             firstTrendType = trendType;
-            sleep(3, " - upwardTrend. Ждем 3 мин");
+            sleep(2, " - upwardTrend. Ждем 2 мин");
             upwardTrend(trendType);
         }
 
-        Logs.debug(Wait.class.getClass(), String.format(" firstTrendType = %1$s, trendType = %2$s", firstTrendType.name(), trendType.name()));
+        Logs.debug(Wait.class.getName(), String.format(" firstTrendType = %1$s, trendType = %2$s", firstTrendType.name(), trendType.name()));
 
         if (firstTrendType == TrendType.downward) {
             sleep(3, " - upwardTrend. Ждем 3 мин");
@@ -26,28 +26,22 @@ public class Wait {
         return (firstTrendType != TrendType.downward && trendType == TrendType.upward);
     }
 
-    public static boolean downwardTrend(TrendType lastTrendType) throws IOException {
+    public static boolean downwardTrend(TrendType firstTrendType) throws IOException {
         TrendType trendType = TrendService.getTrendType(IExConst.PAIR);
-        if (lastTrendType == null) {
-            lastTrendType = trendType;
+        if (firstTrendType == null) {
+            firstTrendType = trendType;
+            sleep(2, " - downwardTrend. Ждем 2 мин");
+            downwardTrend(trendType);
         }
 
-        Logs.debug(Wait.class.getClass(), String.format(" trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
+        Logs.debug(Wait.class.getName(), String.format(" firstTrendType = %1$s, trendType = %2$s", firstTrendType.name(), trendType.name()));
 
-        if (trendType == TrendType.downward) {
+        if (firstTrendType == TrendType.upward) {
             sleep(3, " - downwardTrend. Ждем 3 мин");
             downwardTrend(trendType);
         }
-        if (trendType == TrendType.upward) {
-            if (lastTrendType != TrendType.downward) {
-                sleep(3, " - downwardTrend. Ждем 3 мин");
-                downwardTrend(trendType);
-            } else {
-                trendType = TrendType.flat;
-            }
-        }
 
-        return TrendType.flat == trendType && lastTrendType == TrendType.downward;
+        return (firstTrendType != TrendType.upward && trendType == TrendType.downward);
     }
 
 

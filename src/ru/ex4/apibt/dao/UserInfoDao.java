@@ -74,7 +74,7 @@ public class UserInfoDao {
         return 0;
     }
 
-    public void fillUserInfo(UserInfoDto userInfo) {
+    public void update(UserInfoDto userInfo) {
         String uid = userInfo.getUid();
 
         ArrayList<UserInfoDto.Balance> balances = userInfo.getBalances();
@@ -83,7 +83,7 @@ public class UserInfoDao {
             prs.setValues("uid", uid);
             prs.setValues("currency", balance.getCurrency());
             prs.setValues("amount", balance.getAmount());
-            jdbcTemplate.executeUpdate("INSERT INTO User_Info_Balance VALUES (:uid, :currency, :amount);", prs);
+            jdbcTemplate.executeUpdate("INSERT OR REPLACE INTO User_Info_Balance VALUES (:uid, :currency, :amount);", prs);
         }
 
         ArrayList<UserInfoDto.Balance> reserved = userInfo.getReserved();
@@ -92,7 +92,7 @@ public class UserInfoDao {
             prs.setValues("uid", uid);
             prs.setValues("currency", balance.getCurrency());
             prs.setValues("amount", balance.getAmount());
-            jdbcTemplate.executeUpdate("INSERT INTO User_Info_Reserved VALUES (:uid, :currency, :amount);", prs);
+            jdbcTemplate.executeUpdate("INSERT OR REPLACE INTO User_Info_Reserved VALUES (:uid, :currency, :amount);", prs);
         }
     }
 

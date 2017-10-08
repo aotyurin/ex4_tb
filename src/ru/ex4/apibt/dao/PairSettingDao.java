@@ -57,7 +57,7 @@ public class PairSettingDao {
         return null;
     }
 
-    public void fillPairSetting(List<PairSettingDto> pairSettings) {
+    public void update(List<PairSettingDto> pairSettings) {
         for (PairSettingDto pairSetting : pairSettings) {
             PreparedParamsSetter prs = new PreparedParamsSetter();
             prs.setValues("pair", pairSetting.getPair());

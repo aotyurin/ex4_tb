@@ -1,5 +1,6 @@
 package ru.ex4.apibt.dao;
 
+import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
 import ru.ex4.apibt.dto.OrderCreateDto;
@@ -7,6 +8,10 @@ import ru.ex4.apibt.log.Logs;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class UserOrderDao {
     private JdbcTemplate jdbcTemplate;
@@ -28,8 +33,9 @@ public class UserOrderDao {
         prs.setValues("price", orderCreateDto.getPrice());
         prs.setValues("type", orderCreateDto.getType().name());
         prs.setValues("lastPrice", lastPrice);
+        prs.setValues("date", new SimpleDateFormat(IExConst.DATE_FORMAT).format(new Date()));
 
-        jdbcTemplate.executeUpdate("INSERT OR REPLACE INTO User_Order VALUES (:orderId, :pair, :quantity, :price, :type, :lastPrice);", prs);
+        jdbcTemplate.executeUpdate("INSERT OR REPLACE INTO User_Order VALUES (:orderId, :pair, :quantity, :price, :type, :lastPrice, :date);", prs);
     }
 
     public float getLastPriceByOrder(String orderId) {
@@ -40,7 +46,8 @@ public class UserOrderDao {
                     "  quantity,\n" +
                     "  price,\n" +
                     "  type,\n" +
-                    "  lastPrice\n" +
+                    "  lastPrice, \n" +
+                    "  date \n" +
                     "FROM User_Order\n" +
                     "WHERE orderId = :orderId ;";
 
@@ -63,7 +70,27 @@ public class UserOrderDao {
         jdbcTemplate.executeUpdate("DELETE FROM User_Order WHERE orderId = :orderId;", prs);
     }
 
-    public void deleteAll() {
-        jdbcTemplate.executeUpdate("DELETE FROM User_Order;");
+    public void setStackOrder(String orderId) {
+        PreparedParamsSetter prs = new PreparedParamsSetter();
+        prs.setValues("orderId", orderId);
+        jdbcTemplate.executeUpdate("INSERT INTO Stack_Order VALUES (:orderId);", prs);
     }
+
+    public String getStackOrder() {
+        try {
+            List<String> list = new ArrayList<>();
+            ResultSet resultSet = jdbcTemplate.executeQuery("SELECT orderId FROM Stack_Order");
+            while (resultSet.next()) {
+                list.add(resultSet.getString("orderId"));
+            }
+            if (list.size() > 0) {
+                return list.get(list.size() - 1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 }
