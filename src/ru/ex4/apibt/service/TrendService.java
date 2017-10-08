@@ -2,24 +2,28 @@ package ru.ex4.apibt.service;
 
 import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.dto.TickerDto;
+import ru.ex4.apibt.dto.TradeDto;
 import ru.ex4.apibt.dto.TrendType;
 import ru.ex4.apibt.log.Logs;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class TrendService {
     public static TrendType getTrendType(String pair) throws IOException {
-        Logs.info("определяем тренд в течении >= " + IExConst.LAST_TRADE_PERIOD + " мин.");
-        List<Float> lastTradeList = new ArrayList<>();
+        Logs.info("определяем тренд в течении не менее " + IExConst.LAST_TRADE_PERIOD + " мин.");
+        List<Integer> lastTradeList = new ArrayList<>();
         fillTradeList(lastTradeList, pair);
+
+        Logs.info("lastTradeList: " + String.valueOf(lastTradeList));
 
         return extractType(lastTradeList);
     }
 
 
-    private static void fillTradeList(List<Float> lastTradeList, String pair) throws IOException {
+    private static void fillTradeList(List<Integer> lastTradeList, String pair) throws IOException {
         int iter = 5;
         double pauseMin = (double) IExConst.LAST_TRADE_PERIOD / iter;
 
@@ -28,9 +32,9 @@ public class TrendService {
             if (tickerDto != null) {
                 Logs.info("собираем последнии уник. продажи по lastTrade - " + tickerDto);
 
-                float lastTradeRound = Math.round(tickerDto.getLastTrade());
+                int lastTradeRound = Math.round(tickerDto.getLastTrade());
                 if (lastTradeList.size() > 0) {
-                    Float aFloat = lastTradeList.get(lastTradeList.size() - 1);
+                    int aFloat = lastTradeList.get(lastTradeList.size() - 1);
                     if (lastTradeRound != aFloat) {
                         lastTradeList.add(lastTradeRound);
                     } else {
@@ -47,30 +51,18 @@ public class TrendService {
         }
     }
 
-    static TrendType extractType(List<Float> lastTradeList) {
-        TrendType trendType = null;
-
+    static TrendType extractType(List<Integer> lastTradeList) {
         if (lastTradeList.size() > 1) {
-            float lastValue = lastTradeList.get(0);
+            Integer firstValue = lastTradeList.get(0);
+            Integer lastValue = lastTradeList.get(lastTradeList.size() - 1);
 
-            for (int i = 1; i < lastTradeList.size(); i++) {
-                float d = Math.round(lastValue) - Math.round(lastTradeList.get(i));
-                lastValue = lastTradeList.get(i);
-
-                if ((trendType == TrendType.upward && d > 0) || (trendType == TrendType.downward && d < 0)) {
-                    trendType = TrendType.flat;
-                } else {
-                    if (d < 0) {
-                        trendType = TrendType.upward;
-                    } else if (d > 0) {
-                        trendType = TrendType.downward;
-                    } else {
-                        trendType = TrendType.flat;
-                    }
-                }
+            if (firstValue.compareTo(lastValue) > 0) {
+                return TrendType.downward;
+            } else if (firstValue.compareTo(lastValue) < 0) {
+                return TrendType.upward;
             }
         }
-        return trendType;
+        return TrendType.flat;
     }
 
 

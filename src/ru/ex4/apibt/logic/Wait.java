@@ -8,29 +8,22 @@ import ru.ex4.apibt.service.TrendService;
 import java.io.IOException;
 
 public class Wait {
-    public static boolean upwardTrend(TrendType lastTrendType) throws IOException {
+    public static boolean upwardTrend(TrendType firstTrendType) throws IOException {
         TrendType trendType = TrendService.getTrendType(IExConst.PAIR);
-        if (lastTrendType == null) {
-            lastTrendType = trendType;
-        }
-
-        if (trendType == TrendType.upward) {
-            sleep(7, String.format(" - buyBase. Ждем 7 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
+        if (firstTrendType == null) {
+            firstTrendType = trendType;
+            sleep(3, " - upwardTrend. Ждем 3 мин");
             upwardTrend(trendType);
         }
-        if (trendType == TrendType.downward) {
-            if (lastTrendType != TrendType.upward) {
-                sleep(7, String.format(" - buyBase. Ждем 7 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
-                upwardTrend(trendType);
-            } else {
-                trendType = TrendType.flat;
-            }
-        }
-        if (TrendType.flat == trendType && lastTrendType == TrendType.upward) {
-            return true;
+
+        Logs.debug(Wait.class.getClass(), String.format(" firstTrendType = %1$s, trendType = %2$s", firstTrendType.name(), trendType.name()));
+
+        if (firstTrendType == TrendType.downward) {
+            sleep(3, " - upwardTrend. Ждем 3 мин");
+            upwardTrend(trendType);
         }
 
-        return false;
+        return (firstTrendType != TrendType.downward && trendType == TrendType.upward);
     }
 
     public static boolean downwardTrend(TrendType lastTrendType) throws IOException {
@@ -39,22 +32,22 @@ public class Wait {
             lastTrendType = trendType;
         }
 
+        Logs.debug(Wait.class.getClass(), String.format(" trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
+
         if (trendType == TrendType.downward) {
-            sleep(7, String.format(" - sellBase. Ждем 7 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
+            sleep(3, " - downwardTrend. Ждем 3 мин");
             downwardTrend(trendType);
         }
         if (trendType == TrendType.upward) {
             if (lastTrendType != TrendType.downward) {
-                sleep(9, String.format(" - sellBase. Ждем 9 мин, trendType = %1$s, lastTrendType = %2$s", trendType.name(), lastTrendType.name()));
+                sleep(3, " - downwardTrend. Ждем 3 мин");
                 downwardTrend(trendType);
             } else {
                 trendType = TrendType.flat;
             }
         }
-        if (TrendType.flat == trendType && lastTrendType == TrendType.downward) {
-            return true;
-        }
-        return false;
+
+        return TrendType.flat == trendType && lastTrendType == TrendType.downward;
     }
 
 

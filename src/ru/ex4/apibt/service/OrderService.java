@@ -49,6 +49,7 @@ public class OrderService {
             }
         }
         deleteAll();
+        Logs.error(String.format(" - открытых ордеров по валюте %1$s не найдено", pair));
         return Collections.emptyList();
     }
 
