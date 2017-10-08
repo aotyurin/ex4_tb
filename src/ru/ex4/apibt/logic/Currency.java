@@ -3,10 +3,8 @@ package ru.ex4.apibt.logic;
 import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.log.Logs;
-import ru.ex4.apibt.service.OrderService;
-import ru.ex4.apibt.service.PairSettingsService;
-import ru.ex4.apibt.service.TickerService;
-import ru.ex4.apibt.service.UserInfoService;
+import ru.ex4.apibt.service.*;
+import sun.rmi.runtime.Log;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -14,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 public class Currency {
+
     /**
      * проверяем котируемую валюту и покупаем
      *
@@ -55,39 +54,71 @@ public class Currency {
     }
 
     private static void buyBase(float balances) throws IOException {
-        Logs.info(String.format("buyBase. Пытаемся купить %1$s %2$s", IExConst.CURRENCY_BASE, balances));
-
-        if (Wait.upwardTrend(null)) {
-            TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
-            if (tickerDtoByPair != null) {
-                float sellPrice = tickerDtoByPair.getSellPrice();
-                float quantity = (balances - balances * IExConst.STOCK_FEE) / sellPrice;
-                Logs.info(String.format("Покупаем по рынку: кол-во %1$s, цена %2$s", quantity, sellPrice));
-                Logs.info("Текущие цены и объемы торгов: " + tickerDtoByPair);
-                OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, sellPrice, TypeOrder.buy);
-                OrderService.orderCreate(orderCreateDto, sellPrice);
-
-                Wait.sleep(IExConst.ORDER_LIFE, String.format(" !!! buyBase. Ждем %1$s мин после покупки", IExConst.ORDER_LIFE));
-            }
-        }
-    }
-
-    private static void sellBase(float balances) throws IOException {
-        Logs.info(String.format("sellBase. Пытаемся продать %1$s %2$s", IExConst.CURRENCY_BASE, balances));
-
+        float profit = 0;
         if (Wait.downwardTrend(null)) {
             TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
             if (tickerDtoByPair != null) {
                 float buyPrice = tickerDtoByPair.getBuyPrice();
-                float quantity = buyPrice * balances - balances * IExConst.STOCK_FEE;
-                Logs.info(String.format("Выставлен ордер на продажу: кол-во %1$s, цена %2$s", quantity, buyPrice));
-                Logs.info("Текущие цены и объемы торгов: " + tickerDtoByPair);
-                OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, buyPrice, TypeOrder.sell);
-                OrderService.orderCreate(orderCreateDto, buyPrice);
-
-                Wait.sleep(IExConst.ORDER_LIFE, String.format(" !!! sellBase. Ждем %1$s мин после продажи", IExConst.ORDER_LIFE));
+                profit = buyPrice - buyPrice * IExConst.STOCK_FEE - buyPrice * IExConst.PROFIT_MARKUP / 5;
             }
         }
+
+        TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+        if (tickerDtoByPair != null) {
+            float buyPrice = tickerDtoByPair.getBuyPrice();
+            float price = (profit != 0) ? profit : buyPrice;
+            float quantity = (balances - balances * IExConst.STOCK_FEE) / price;
+            Logs.info(String.format("Выставляем ордер на покупку: кол-во %1$s, цена %2$s", quantity, price));
+            Logs.debug(java.util.Currency.class.getName(), "Текущие цены и объемы торгов: " + tickerDtoByPair);
+            OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, price, TypeOrder.buy);
+            String orderId = OrderService.orderCreate(orderCreateDto, buyPrice);
+            OrderService.setStackOrder(orderId);
+
+            Wait.sleep(IExConst.ORDER_LIFE, String.format(" !!! buyBase. Ждем %1$s мин после покупки", IExConst.ORDER_LIFE));
+        }
+    }
+
+    private static void sellBase(float quantity) throws IOException {
+        TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+        if (tickerDtoByPair != null) {
+            float historyPrice = getHistoryPrice();
+            float sellPrice = tickerDtoByPair.getSellPrice();
+            if (historyPrice > 0 && historyPrice > sellPrice) {
+                Logs.error(String.format("Продать %1$s не сможем, текущая цена (%2$s) ниже покупки (%3$s) ", IExConst.CURRENCY_BASE, sellPrice, historyPrice));
+                return;
+            }
+
+            if (Wait.upwardTrend(null)) {
+                tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+                if (tickerDtoByPair != null) {
+                    sellPrice = tickerDtoByPair.getSellPrice();
+                    float price;
+                    if (historyPrice > 0) {
+                        price = historyPrice + historyPrice * IExConst.STOCK_FEE + historyPrice * IExConst.PROFIT_MARKUP;
+                    }
+                    else {
+                        price = sellPrice + sellPrice * IExConst.STOCK_FEE + sellPrice * IExConst.PROFIT_MARKUP;
+                    }
+                    Logs.info(String.format("Выставляем ордер на продажу: кол-во %1$s, по цене %2$s", quantity, price));
+                    Logs.debug(java.util.Currency.class.getName(), "Текущие цены и объемы торгов: " + tickerDtoByPair);
+                    OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, price, TypeOrder.sell);
+                    OrderService.orderCreate(orderCreateDto, sellPrice);
+
+                    Wait.sleep(IExConst.ORDER_LIFE, String.format(" !!! sellBase. Ждем %1$s мин после продажи", IExConst.ORDER_LIFE));
+                }
+            } else {
+                Logs.error(String.format("Продать %1$s не смогли, тренд нисходящий", IExConst.CURRENCY_BASE));
+            }
+        }
+    }
+
+    private static float getHistoryPrice() {
+        String orderId = OrderService.getStackOrder();
+        if (orderId != null) {
+            return HistoryTradeService.getPrice(orderId);
+        }
+
+        return 0;
     }
 
 
@@ -100,8 +131,9 @@ public class Currency {
             TickerDto tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
             if (tickerDtoByPair != null) {
                 // отклонение цены от текущей в процентах
-                int deviationPrice = Math.round((userOpenOrder.getPrice() - tickerDtoByPair.getBuyPrice()) / tickerDtoByPair.getBuyPrice() * 100);
-                Logs.info(" - отклонение цены ордера от текущей в процентах: " + deviationPrice);
+                float deviationPrice = (userOpenOrder.getPrice() - tickerDtoByPair.getSellPrice()) / tickerDtoByPair.getSellPrice() * 100;
+                Logs.info(String.format(" - отклонение цены ордера от текущей в процентах: %1$s, цена ордера: %2$s, цена продажи: %3$s",
+                        deviationPrice, userOpenOrder.getPrice(), tickerDtoByPair.getSellPrice()));
 
                 Calendar orderCreated = Calendar.getInstance();
                 orderCreated.setTime(userOpenOrder.getCreated());
@@ -112,37 +144,49 @@ public class Currency {
                     Logs.info("Отмена ордера: " + userOpenOrder.getOrderId());
                     OrderService.orderCancel(userOpenOrder.getOrderId());
                 }
-            } else
-            if (userOpenOrder.getType() == TypeOrder.sell) {
-                if (Wait.upwardTrend(null)) {
-                    TickerDto tickerDtoByPair2 = TickerService.getTickerDtoByPair(IExConst.PAIR);
-                    if (tickerDtoByPair2 != null) {
-                        float sellPrice = tickerDtoByPair2.getSellPrice();
-                        float buyPrice = tickerDtoByPair2.getBuyPrice();
 
+                if (userOpenOrder.getType() == TypeOrder.sell) {
+                    if (deviationPrice <= 0.5 && deviationPrice > 0) {
                         float lastPriceByOrder = OrderService.getLastPriceByOrder(userOpenOrder.getOrderId());
+                        float sellPrice = tickerDtoByPair.getSellPrice();
                         if (lastPriceByOrder > 0 && sellPrice > lastPriceByOrder) {
-                            float deviationPrice = (userOpenOrder.getPrice() - sellPrice) / sellPrice * 100;
-                            if (deviationPrice <= 0.15 && deviationPrice > 0) {
-                                OrderService.orderCancel(userOpenOrder.getOrderId());
+                            if (Wait.upwardTrend(null)) {
+                                tickerDtoByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+                                if (tickerDtoByPair != null) {
+                                    float deviationPrice2 = (userOpenOrder.getPrice() - tickerDtoByPair.getSellPrice()) / tickerDtoByPair.getSellPrice() * 100;
+                                    Logs.info(String.format(" - повышаем ордер. отклонение цены ордера от текущей в процентах: %1$s, цена ордера: %2$s, цена продажи: %3$s",
+                                            deviationPrice2, userOpenOrder.getPrice(), tickerDtoByPair.getSellPrice()));
+                                    if (deviationPrice2 < deviationPrice) {
+                                        sellPrice = tickerDtoByPair.getSellPrice();
+                                        float buyPrice = tickerDtoByPair.getBuyPrice();
+                                        OrderService.orderCancel(userOpenOrder.getOrderId());
 
-                                float quantity = UserInfoService.getBalance(IExConst.CURRENCY_BASE);
-                                float priceProfit = buyPrice + buyPrice * IExConst.STOCK_FEE + buyPrice * IExConst.PROFIT_MARKUP / 10;
-                                OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, priceProfit, TypeOrder.sell);
-                                OrderService.orderCreate(orderCreateDto, sellPrice);
+                                        float quantity = UserInfoService.getBalance(IExConst.CURRENCY_BASE);
+                                        float priceProfit = buyPrice + buyPrice * IExConst.STOCK_FEE + buyPrice * IExConst.PROFIT_MARKUP / 10;
+                                        OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, priceProfit, TypeOrder.sell);
+                                        OrderService.orderCreate(orderCreateDto, sellPrice);
 
-                                Wait.sleep(14, " - checkOrder. Ждем 14 мин после пересоздания, downwardTrend ");
-                                // // ***
+                                        Wait.sleep(14, " - checkOrder. Ждем 14 мин после пересоздания, upwardTrend ");
+                                        // // ***
+                                    }
+                                }
+                            } else {
+                                Wait.sleep(9, " - checkOrder. Ждем 9 мин, downwardTrend ");
+                                checkOrder();
                             }
                         }
                     }
-                } else {
-                    Wait.sleep(9, " - checkOrder. Ждем 9 мин, downwardTrend ");
-                    checkOrder();
                 }
             }
         }
     }
 
 
+    public static void info() throws IOException {
+        TickerDto tickerDto = TickerService.getTickerDtoByPair(IExConst.PAIR);
+        if (tickerDto != null) {
+            Logs.info(String.format("Цены \t \t - на продажу: %1$s, \t - на покупку: %2$s", tickerDto.getSellPrice(), tickerDto.getBuyPrice()));
+        }
+
+    }
 }

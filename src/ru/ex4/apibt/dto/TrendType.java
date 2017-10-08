@@ -1,7 +1,7 @@
 package ru.ex4.apibt.dto;
 
 public enum TrendType {
-    upward,     //восходящая
+    upward,     //восходящий
     downward,   //нисходящий
     flat        //боковой
 }

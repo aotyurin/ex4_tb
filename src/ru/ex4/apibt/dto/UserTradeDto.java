@@ -34,7 +34,7 @@ public class UserTradeDto {
     public static class UserTrade extends TradeDto.Trade{
         //        идентификатор ордера пользователя
         @JsonProperty("order_id")
-        private Long orderId;
+        private String orderId;
         //        валютная пара
         @JsonProperty("pair")
         private String pair;
@@ -43,12 +43,13 @@ public class UserTradeDto {
             super();
         }
 
-        public UserTrade(float amount, Date date, float price, float quantity, Long tradeId, TypeOrder type) {
+        public UserTrade(String orderId, String pair, float amount, Date date, float price, float quantity, Long tradeId, TypeOrder type) {
             super(amount, date, price, quantity, tradeId, type);
+            this.orderId = orderId;
+            this.pair = pair;
         }
 
-
-        public Long getOrderId() {
+        public String getOrderId() {
             return orderId;
         }
 

@@ -8,7 +8,6 @@ import ru.ex4.apibt.extermod.ExFactory;
 import ru.ex4.apibt.log.Logs;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,6 +24,9 @@ public class OrderService {
                     ("Ошибка создания ордера !!!" + orderCreateResultDto.getError());
         } else {
             save(orderCreateResultDto.getOrderId(), orderCreateDto, lastPrice);
+            HistoryTradeService.update();
+            UserInfoService.update();
+
             return orderCreateResultDto.getOrderId();
         }
     }
@@ -36,6 +38,8 @@ public class OrderService {
             throw new RuntimeException("Ошибка отмены ордера: " + orderCreateResultDto.getError());
         } else {
             deleteByOrderId(orderId);
+            HistoryTradeService.update();
+            UserInfoService.update();
         }
     }
 
@@ -48,7 +52,7 @@ public class OrderService {
                 }
             }
         }
-        deleteAll();
+        Logs.error(String.format(" - открытых ордеров по валюте %1$s не найдено", pair));
         return Collections.emptyList();
     }
 
@@ -64,8 +68,14 @@ public class OrderService {
         userOrderDao.deleteByOrderId(orderId);
     }
 
-    private static void deleteAll() {
-        userOrderDao.deleteAll();
+
+
+    public static void setStackOrder(String orderId) {
+        userOrderDao.setStackOrder(orderId);
+    }
+
+    public static String getStackOrder() {
+        return userOrderDao.getStackOrder();
     }
 
 

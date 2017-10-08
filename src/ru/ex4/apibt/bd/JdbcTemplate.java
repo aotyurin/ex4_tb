@@ -48,9 +48,18 @@ public class JdbcTemplate {
         }
     }
 
-    public ResultSet executeQuery(String sql, PreparedParamsSetter preparedParamsSetter) throws SQLException {
-        String sql2 = replaceParam(sql, preparedParamsSetter);
-        return runResultSet(sql2);
+    public ResultSet executeQuery(String sql) {
+        return executeQuery(sql, null);
+    }
+
+    public ResultSet executeQuery(String sql, PreparedParamsSetter preparedParamsSetter) {
+        try {
+            String sql2 = replaceParam(sql, preparedParamsSetter);
+            return runResultSet(sql2);
+        } catch (SQLException e) {
+            Logs.error(e.getMessage());
+        }
+        return null;
     }
 
 
