@@ -10,8 +10,12 @@ public class TickerService {
     private static ExFactory exFactory = ExFactory.exFactoryInstance();
 
 
+    public static List<TickerDto> getTickerDtos() throws IOException {
+        return exFactory.getTicker();
+    }
+
     public static TickerDto getTickerDtoByPair(String pair) throws IOException {
-        List<TickerDto> tickerDtoList = exFactory.getTicker();
+        List<TickerDto> tickerDtoList = getTickerDtos();
         for (TickerDto tickerDto : tickerDtoList) {
             if (tickerDto.getPair().equals(pair)) {
                 return tickerDto;

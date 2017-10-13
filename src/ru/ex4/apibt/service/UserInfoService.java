@@ -8,15 +8,16 @@ import ru.ex4.apibt.log.Logs;
 import java.io.IOException;
 
 public class UserInfoService {
-    private static UserInfoDao userInfoDao = new UserInfoDao();
-//
-//    public static float getBalance(String currency) {
-//        return userInfoDao.getBalance(currency);
-//    }
-
     static ExFactory exFactory = ExFactory.exFactoryInstance();
+    private static UserInfoDao userInfoDao = new UserInfoDao();
 
-    public static float getBalance(String currency) throws IOException {
+
+
+    public static float getBalance(String currency) {
+        return userInfoDao.getBalance(currency);
+    }
+
+    public static float getBalanceOnLine(String currency) throws IOException {
         UserInfoDto userInfo = exFactory.getUserInfo();
 
         for (UserInfoDto.Balance balance : userInfo.getBalances()) {

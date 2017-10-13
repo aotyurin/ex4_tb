@@ -1,22 +1,13 @@
 package ru.ex4.apibt.service;
 
 import ru.ex4.apibt.dao.InitBaseDao;
-import ru.ex4.apibt.dao.PairSettingDao;
-import ru.ex4.apibt.dao.UserInfoDao;
-import ru.ex4.apibt.dao.HistoryTradeDao;
-import ru.ex4.apibt.dto.PairSettingDto;
-import ru.ex4.apibt.dto.UserInfoDto;
-import ru.ex4.apibt.extermod.ExFactory;
 import ru.ex4.apibt.log.Logs;
-
-import java.io.IOException;
-import java.util.List;
+import ru.ex4.apibt.logic.Wait;
 
 public class InitBaseService {
 
-    public void init() {
+    public static void init() {
         InitBaseDao initBaseDao = new InitBaseDao();
-        PairSettingDao pairSettingDao = new PairSettingDao();
 
         Logs.info("init bd ...");
         Logs.info(" - создаем таблицы");
@@ -25,11 +16,23 @@ public class InitBaseService {
         Logs.info(" - заполняем настройки валютных пар");
         PairSettingsService.update();
 
+        updateChangeData(0L);
+    }
 
-        Logs.info(" - заполняем данные пользователя");
+    public static void updateChangeData(Long... waitMin) {
+        long wait = 1;
+
+        if (waitMin.length > 0) {
+            wait = waitMin[0];
+        }
+        Wait.sleep(wait, String.format("updateChangeData. Ждем %1$s минут ...", wait));
+
+        Logs.info(" - обновляем данные пользователя");
         UserInfoService.update();
 
-        Logs.info(" - заполняем историю сделок пользователя");
+        Logs.info(" - обновляем историю сделок пользователя");
         HistoryTradeService.update();
     }
+
+
 }

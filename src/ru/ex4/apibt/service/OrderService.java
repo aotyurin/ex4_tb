@@ -24,8 +24,6 @@ public class OrderService {
                     ("Ошибка создания ордера !!!" + orderCreateResultDto.getError());
         } else {
             save(orderCreateResultDto.getOrderId(), orderCreateDto, lastPrice);
-            HistoryTradeService.update();
-            UserInfoService.update();
 
             return orderCreateResultDto.getOrderId();
         }
@@ -38,8 +36,6 @@ public class OrderService {
             throw new RuntimeException("Ошибка отмены ордера: " + orderCreateResultDto.getError());
         } else {
             deleteByOrderId(orderId);
-            HistoryTradeService.update();
-            UserInfoService.update();
         }
     }
 
@@ -52,7 +48,6 @@ public class OrderService {
                 }
             }
         }
-        Logs.error(String.format(" - открытых ордеров по валюте %1$s не найдено", pair));
         return Collections.emptyList();
     }
 

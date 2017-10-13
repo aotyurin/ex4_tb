@@ -47,7 +47,9 @@ public class Wait {
 
     public static void sleep(long minutes, String msg) {
         try {
-            Logs.info(msg);
+            if (msg != null) {
+                Logs.info(msg);
+            }
             Thread.sleep(1000 * 60 * minutes);
         } catch (InterruptedException ignore) {
         }

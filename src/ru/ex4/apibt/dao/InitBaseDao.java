@@ -40,8 +40,8 @@ public class InitBaseDao {
 
         String sqlCreate__Stack_Order = "CREATE TABLE IF NOT EXISTS Stack_Order(orderId TEXT PRIMARY KEY);";
         jdbcTemplate.executeUpdate(sqlCreate__Stack_Order);
-        String sqlClean__Stack_Order = "DELETE FROM Stack_Order;";
-        jdbcTemplate.executeUpdate(sqlClean__Stack_Order);
+//        String sqlClean__Stack_Orde = "DELETE FROM Stack_Order;";
+//        jdbcTemplate.executeUpdate(sqlClean__Stack_Orde);
 
         String sqlCreate__History_Trades = "CREATE TABLE IF NOT EXISTS History_Trades(orderId TEXT, pair TEXT, tradeId TEXT, type TEXT, price REAL, quantity REAL, amount REAL, date TEXT, PRIMARY KEY (orderId, tradeId)   );";
         jdbcTemplate.executeUpdate(sqlCreate__History_Trades);
