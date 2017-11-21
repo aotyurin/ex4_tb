@@ -4,12 +4,8 @@ import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.service.*;
-import sun.rmi.runtime.Log;
 
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 public class Currency {
 
@@ -81,7 +77,7 @@ public class Currency {
 
             InitBaseService.updateChangeData();
 
-            Wait.sleep(IExConst.ORDER_LIFE, String.format(" !!! buyBase. Ждем %1$s мин после покупки", IExConst.ORDER_LIFE));
+            Wait.sleep(IExConst.WAIT_ORDER_LIFE, String.format(" !!! buyBase. Ждем %1$s мин после покупки", IExConst.WAIT_ORDER_LIFE));
         }
     }
 
@@ -100,14 +96,14 @@ public class Currency {
                 if (tickerDtoByPair != null) {
                     sellPrice = tickerDtoByPair.getSellPrice();
                     float price = sellPrice + sellPrice * IExConst.STOCK_FEE + sellPrice * IExConst.PROFIT_MARKUP;
-                    Logs.info(String.format("Выставляем ордер на продажу: кол-во %1$s, по цене %2$s", quantity, price));
+                    Logs.info(String.format("Выставляем ордер на продажу: кол-во %1$s, по цене %2$s, цена покупки %3$s", quantity, price, historyPrice));
                     Logs.debug(java.util.Currency.class.getName(), "Текущие цены и объемы торгов: " + tickerDtoByPair);
                     OrderCreateDto orderCreateDto = new OrderCreateDto(IExConst.PAIR, quantity, price, TypeOrder.sell);
                     OrderService.orderCreate(orderCreateDto, sellPrice);
 
                     InitBaseService.updateChangeData();
 
-                    Wait.sleep(IExConst.ORDER_LIFE, String.format(" !!! sellBase. Ждем %1$s мин после продажи", IExConst.ORDER_LIFE));
+                    Wait.sleep(IExConst.WAIT_ORDER_LIFE, String.format(" !!! sellBase. Ждем %1$s мин после продажи", IExConst.WAIT_ORDER_LIFE));
                 }
             } else {
                 Logs.error(String.format("Продать %1$s не смогли, тренд нисходящий", IExConst.CURRENCY_BASE));
@@ -125,10 +121,9 @@ public class Currency {
     }
 
 
-
     public static void info() throws IOException {
-        List<TickerDto> tickerDtoList = TickerService.getTickerDtos();
-        for (TickerDto tickerDto : tickerDtoList) {
+        TickerDto tickerDto = TickerService.getTickerDtoByPair(IExConst.PAIR);
+        if (tickerDto != null) {
             Logs.info(String.format("Цены для %1$s \t \t - на продажу: %2$s, \t - на покупку: %3$s", tickerDto.getPair(), tickerDto.getSellPrice(), tickerDto.getBuyPrice()));
         }
     }

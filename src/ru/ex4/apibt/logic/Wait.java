@@ -51,7 +51,8 @@ public class Wait {
                 Logs.info(msg);
             }
             Thread.sleep(1000 * 60 * minutes);
-        } catch (InterruptedException ignore) {
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 }

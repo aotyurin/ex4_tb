@@ -35,12 +35,14 @@ public class OpenOrder {
                     Logs.info(String.format(" - отклонение цены ордера от текущей в процентах: %1$s, цена ордера: %2$s, цена продажи: %3$s",
                             deviationPrice, userOpenOrder.getPrice(), sellPrice1));
 
-                    Calendar orderCreated = Calendar.getInstance();
-                    orderCreated.setTime(userOpenOrder.getCreated());
+                    Calendar orderLife = Calendar.getInstance();
+                    orderLife.setTime(userOpenOrder.getCreated());
+                    orderLife.add(Calendar.DAY_OF_YEAR, IExConst.DAY_ORDER_LIFE);
+
                     Calendar current = Calendar.getInstance();
                     current.setTime(new Date());
 
-                    if (deviationPrice >= 5 || orderCreated.get(Calendar.DAY_OF_YEAR) != current.get(Calendar.DAY_OF_YEAR)) {
+                    if (deviationPrice >= 5 || orderLife.get(Calendar.DAY_OF_YEAR) < current.get(Calendar.DAY_OF_YEAR)) {
                         Logs.info("Отмена ордера: " + userOpenOrder.getOrderId());
                         OrderService.orderCancel(userOpenOrder.getOrderId());
 
@@ -76,7 +78,7 @@ public class OpenOrder {
 
                                             InitBaseService.updateChangeData(2L);
 
-                                            Wait.sleep(IExConst.ORDER_LIFE, String.format(" - checkOrder. Ждем %1$s мин после пересоздания", IExConst.ORDER_LIFE));
+                                            Wait.sleep(IExConst.WAIT_ORDER_LIFE, String.format(" - checkOrder. Ждем %1$s мин после пересоздания", IExConst.WAIT_ORDER_LIFE));
 
                                             // // ***
                                         }
