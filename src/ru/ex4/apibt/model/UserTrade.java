@@ -1,4 +1,4 @@
-package ru.ex4.apibt.dto;
+package ru.ex4.apibt.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -6,18 +6,18 @@ import java.util.Date;
 import java.util.List;
 
 
-public class UserTradeDto {
+public class UserTrade {
     //      валютная пара
     @JsonProperty("pair")
     private String pair;
 
     @JsonProperty("values")
-    private List<UserTrade> trades;
+    private List<UserTradeValue> trades;
 
-    private UserTradeDto() {
+    private UserTrade() {
     }
 
-    public UserTradeDto(String pair, List<UserTrade> trades) {
+    public UserTrade(String pair, List<UserTradeValue> trades) {
         this.pair = pair;
         this.trades = trades;
     }
@@ -26,12 +26,12 @@ public class UserTradeDto {
         return pair;
     }
 
-    public List<UserTrade> getTrades() {
+    public List<UserTradeValue> getTrades() {
         return trades;
     }
 
 
-    public static class UserTrade extends TradeDto.Trade{
+    public static class UserTradeValue extends Trade.TradeValue {
         //        идентификатор ордера пользователя
         @JsonProperty("order_id")
         private String orderId;
@@ -39,11 +39,11 @@ public class UserTradeDto {
         @JsonProperty("pair")
         private String pair;
 
-        private UserTrade() {
+        private UserTradeValue() {
             super();
         }
 
-        public UserTrade(String orderId, String pair, float amount, Date date, float price, float quantity, Long tradeId, TypeOrder type) {
+        public UserTradeValue(String orderId, String pair, float amount, Date date, float price, float quantity, Long tradeId, TypeOrder type) {
             super(amount, date, price, quantity, tradeId, type);
             this.orderId = orderId;
             this.pair = pair;
@@ -59,7 +59,7 @@ public class UserTradeDto {
 
         @Override
         public String toString() {
-            return "UserTrade{" +
+            return "UserTradeValue{" +
                     "orderId=" + orderId +
                     ", pair='" + pair + '\'' + super.toString() +
                     '}';

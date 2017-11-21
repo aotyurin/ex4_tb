@@ -1,8 +1,8 @@
-package ru.ex4.apibt.dto;
+package ru.ex4.apibt.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class OrderCreateResultDto {
+public class OrderCreateResult {
     //    идентификатор ордера
     @JsonProperty("order_id")
     private String orderId;
@@ -14,10 +14,10 @@ public class OrderCreateResultDto {
     private String error;
 
 
-    private OrderCreateResultDto() {
+    private OrderCreateResult() {
     }
 
-    public OrderCreateResultDto(String error, String orderId, Boolean result) {
+    public OrderCreateResult(String error, String orderId, Boolean result) {
         this.error = error;
         this.orderId = orderId;
         this.result = result;
@@ -39,7 +39,7 @@ public class OrderCreateResultDto {
 
     @Override
     public String toString() {
-        return "OrderCreateResultDto{" +
+        return "OrderCreateResult{" +
                 "orderId='" + orderId + '\'' +
                 ", result=" + result +
                 ", error='" + error + '\'' +

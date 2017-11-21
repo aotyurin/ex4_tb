@@ -1,22 +1,22 @@
-package ru.ex4.apibt.dto;
+package ru.ex4.apibt.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Date;
 import java.util.List;
 
-public class UserOpenOrderDto {
+public class UserOpenOrder {
     //  валютная пара
     @JsonProperty("pair")
     private String pair;
 
     @JsonProperty("values")
-    private List<UserOpenOrder> openOrders;
+    private List<UserOpenOrderValue> openOrders;
 
-    private UserOpenOrderDto() {
+    private UserOpenOrder() {
     }
 
-    public UserOpenOrderDto(String pair, List<UserOpenOrder> openOrders) {
+    public UserOpenOrder(String pair, List<UserOpenOrderValue> openOrders) {
         this.pair = pair;
         this.openOrders = openOrders;
     }
@@ -25,13 +25,13 @@ public class UserOpenOrderDto {
         return pair;
     }
 
-    public List<UserOpenOrder> getOpenOrders() {
+    public List<UserOpenOrderValue> getOpenOrders() {
         return openOrders;
     }
 
 
 
-    public static class UserOpenOrder {
+    public static class UserOpenOrderValue {
         //  идентификатор ордера
         @JsonProperty("order_id")
         private String orderId;
@@ -58,10 +58,10 @@ public class UserOpenOrderDto {
             this.created = new Date(created * 1000L);
         }
 
-        private UserOpenOrder() {
+        private UserOpenOrderValue() {
         }
 
-        public UserOpenOrder(String orderId, String pair, TypeOrder type, float price, float quantity, float amount, Date created) {
+        public UserOpenOrderValue(String orderId, String pair, TypeOrder type, float price, float quantity, float amount, Date created) {
             this.orderId = orderId;
             this.pair = pair;
             this.type = type;
@@ -103,7 +103,7 @@ public class UserOpenOrderDto {
 
         @Override
         public String toString() {
-            return "UserOpenOrder{" +
+            return "UserOpenOrderValue{" +
                     "orderId='" + orderId + '\'' +
                     ", pair='" + pair + '\'' +
                     ", type=" + type +

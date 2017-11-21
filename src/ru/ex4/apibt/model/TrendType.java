@@ -1,4 +1,4 @@
-package ru.ex4.apibt.dto;
+package ru.ex4.apibt.model;
 
 public enum TrendType {
     upward,     //восходящий

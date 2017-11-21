@@ -1,103 +1,70 @@
 package ru.ex4.apibt.dto;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import javafx.beans.property.*;
+import javafx.beans.value.ObservableValue;
 
-import java.util.Date;
+import java.math.BigDecimal;
 
 public class TickerDto {
     //      валютная пара
-    @JsonProperty("pair")
     private String pair;
     //    текущая максимальная цена покупки
-    @JsonProperty("buy_price")
-    private float buyPrice;
+    private BigDecimal buyPrice;
     //    текущая минимальная цена продажи
-    @JsonProperty("sell_price")
-    private float sellPrice;
+    private BigDecimal sellPrice;
     //    цена последней сделки
-    @JsonProperty("last_trade")
-    private float lastTrade;
+    private BigDecimal lastTrade;
     //    максимальная цена сделки за 24 часа
-    @JsonProperty("high")
     private float high;
     //    минимальная цена сделки за 24 часа
-    @JsonProperty("low")
     private float low;
     //    средняя цена сделки за 24 часа
-    @JsonProperty("avg")
     private float avg;
     //    объем всех сделок за 24 часа
-    @JsonProperty("vol")
     private float vol;
     //    сумма всех сделок за 24 часа
-    @JsonProperty("vol_curr")
     private float volCurr;
-    //    дата и время обновления данных
-    private Date updated;
 
-    @JsonProperty("updated") //в формате Unix
-    private void setUpdated(Long updated) {
-        this.updated = new Date(updated * 1000L);
+    public TickerDto(String pair, BigDecimal buyPrice, BigDecimal sellPrice, BigDecimal lastTrade, float high, float low, float avg, float vol, float volCurr) {
+        this.pair = pair;
+        this.buyPrice = buyPrice;
+        this.sellPrice = sellPrice;
+        this.lastTrade = lastTrade;
+        this.high = high;
+        this.low = low;
+        this.avg = avg;
+        this.vol = vol;
+        this.volCurr = volCurr;
     }
 
 
-    private TickerDto() {
+    public StringProperty pairProperty() {
+        return new SimpleStringProperty(pair);
     }
 
-
-    public float getAvg() {
-        return avg;
+    public FloatProperty buyPriceProperty() {
+        return new SimpleFloatProperty(buyPrice.floatValue());
     }
 
-    public float getBuyPrice() {
-        return buyPrice;
+    public FloatProperty sellPriceProperty() {
+        return new SimpleFloatProperty(sellPrice.floatValue());
     }
 
-    public String getPair() {
-        return pair;
+    public FloatProperty volatPresentProperty() {
+        float v = (high - low) / low * 100;
+        return new SimpleFloatProperty(v);
     }
 
-    public float getHigh() {
-        return high;
+    public FloatProperty changePricePresentProperty() {
+        float v = (sellPrice.floatValue() - avg) / avg * 100;
+        return new SimpleFloatProperty(v);
     }
 
-    public float getLastTrade() {
-        return lastTrade;
+    public BooleanProperty changePriceFactorProperty() {
+        return new SimpleBooleanProperty(avg < sellPrice.floatValue());
     }
 
-    public float getLow() {
-        return low;
-    }
-
-    public float getSellPrice() {
-        return sellPrice;
-    }
-
-    public Date getUpdated() {
-        return updated;
-    }
-
-    public float getVol() {
-        return vol;
-    }
-
-    public float getVolCurr() {
-        return volCurr;
-    }
-
-    @Override
-    public String toString() {
-        return "TickerDto{" +
-                "pair='" + pair + '\'' +
-                ", buyPrice=" + buyPrice +
-                ", sellPrice=" + sellPrice +
-                ", lastTrade=" + lastTrade +
-                ", high=" + high +
-                ", low=" + low +
-                ", avg=" + avg +
-                ", vol=" + vol +
-                ", volCurr=" + volCurr +
-                ", updated=" + updated +
-                '}';
+    public StringProperty volumeProperty() {
+        return new SimpleStringProperty(vol + "(" + volCurr + ")");
     }
 }

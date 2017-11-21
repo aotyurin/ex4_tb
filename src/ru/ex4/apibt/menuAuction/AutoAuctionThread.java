@@ -1,4 +1,4 @@
-package ru.ex4.apibt.thread;
+package ru.ex4.apibt.menuAuction;
 
 import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.logic.Currency;
@@ -7,15 +7,13 @@ import ru.ex4.apibt.logic.Wait;
 
 import java.io.IOException;
 
-public class AutoAuction extends Thread{
+public class AutoAuctionThread extends Thread{
 
 
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                Currency.info();
-
                 boolean checkQuotedAndBuy   = Currency.checkQuotedAndBuy();
 
                 boolean checkBaseAndSell    = Currency.checkBaseAndSell();

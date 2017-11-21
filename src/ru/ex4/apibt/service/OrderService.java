@@ -1,9 +1,9 @@
 package ru.ex4.apibt.service;
 
 import ru.ex4.apibt.dao.UserOrderDao;
-import ru.ex4.apibt.dto.OrderCreateDto;
-import ru.ex4.apibt.dto.OrderCreateResultDto;
-import ru.ex4.apibt.dto.UserOpenOrderDto;
+import ru.ex4.apibt.model.OrderCreate;
+import ru.ex4.apibt.model.OrderCreateResult;
+import ru.ex4.apibt.model.UserOpenOrder;
 import ru.ex4.apibt.extermod.ExFactory;
 import ru.ex4.apibt.log.Logs;
 
@@ -16,33 +16,37 @@ public class OrderService {
     private static ExFactory exFactory = ExFactory.exFactoryInstance();
 
 
-    public static String orderCreate(OrderCreateDto orderCreateDto, float lastPrice) throws IOException {
-        OrderCreateResultDto orderCreateResultDto = exFactory.orderCreate(orderCreateDto);
-        Logs.info(orderCreateResultDto.toString());
-        if (!orderCreateResultDto.getResult()) {
+    public static String orderCreate(OrderCreate orderCreate, float lastPrice) throws IOException {
+        OrderCreateResult orderCreateResult = exFactory.orderCreate(orderCreate);
+//        Logs.info("!!! СОЗДАЕМ МНИМЫЙ ОРДЕР id=7777777");
+//        OrderCreateResult orderCreateResult = new OrderCreateResult("", "7777777", true);
+        Logs.info(orderCreateResult.toString());
+        if (!orderCreateResult.getResult()) {
             throw new RuntimeException
-                    ("Ошибка создания ордера !!!" + orderCreateResultDto.getError());
+                    ("Ошибка создания ордера !!!" + orderCreateResult.getError());
         } else {
-            save(orderCreateResultDto.getOrderId(), orderCreateDto, lastPrice);
+            save(orderCreateResult.getOrderId(), orderCreate, lastPrice);
 
-            return orderCreateResultDto.getOrderId();
+            return orderCreateResult.getOrderId();
         }
     }
 
     public static void orderCancel(String orderId) throws IOException {
-        OrderCreateResultDto orderCreateResultDto = exFactory.orderCancel(orderId);
-        Logs.info(orderCreateResultDto.toString());
-        if (!orderCreateResultDto.getResult()) {
-            throw new RuntimeException("Ошибка отмены ордера: " + orderCreateResultDto.getError());
+        OrderCreateResult orderCreateResult = exFactory.orderCancel(orderId);
+//        Logs.info("!!! ОТМЕНЯЕМ МНИМЫЙ ОРДЕР");
+//        OrderCreateResult orderCreateResult = new OrderCreateResult("", null, true);
+        Logs.info(orderCreateResult.toString());
+        if (!orderCreateResult.getResult()) {
+            throw new RuntimeException("Ошибка отмены ордера: " + orderCreateResult.getError());
         } else {
             deleteByOrderId(orderId);
         }
     }
 
-    public static List<UserOpenOrderDto.UserOpenOrder> getOpenOrderByPair(String pair) throws IOException {
-        List<UserOpenOrderDto> userOpenOrders = exFactory.getUserOpenOrders();
+    public static List<UserOpenOrder.UserOpenOrderValue> getOpenOrderByPair(String pair) throws IOException {
+        List<UserOpenOrder> userOpenOrders = exFactory.getUserOpenOrders();
         if (userOpenOrders.size() > 0) {
-            for (UserOpenOrderDto userOpenOrder : userOpenOrders) {
+            for (UserOpenOrder userOpenOrder : userOpenOrders) {
                 if (userOpenOrder.getPair().equals(pair)) {
                     return userOpenOrder.getOpenOrders();
                 }
@@ -55,8 +59,8 @@ public class OrderService {
         return userOrderDao.getLastPriceByOrder(orderId);
     }
 
-    private static void save(String orderId, OrderCreateDto orderCreateDto, float lastPrice) {
-        userOrderDao.save(orderId, orderCreateDto, lastPrice);
+    private static void save(String orderId, OrderCreate orderCreate, float lastPrice) {
+        userOrderDao.save(orderId, orderCreate, lastPrice);
     }
 
     private static void deleteByOrderId(String orderId) {

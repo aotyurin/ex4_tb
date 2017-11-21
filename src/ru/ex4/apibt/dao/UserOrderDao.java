@@ -3,8 +3,7 @@ package ru.ex4.apibt.dao;
 import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
-import ru.ex4.apibt.dto.OrderCreateDto;
-import ru.ex4.apibt.log.Logs;
+import ru.ex4.apibt.model.OrderCreate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,13 +24,13 @@ public class UserOrderDao {
     }
 
     // currPrice - цена, на момент создания ордера
-    public void save(String orderId, OrderCreateDto orderCreateDto, float lastPrice) {
+    public void save(String orderId, OrderCreate orderCreate, float lastPrice) {
         PreparedParamsSetter prs = new PreparedParamsSetter();
         prs.setValues("orderId", orderId);
-        prs.setValues("pair", orderCreateDto.getPair());
-        prs.setValues("quantity", orderCreateDto.getQuantity());
-        prs.setValues("price", orderCreateDto.getPrice());
-        prs.setValues("type", orderCreateDto.getType().name());
+        prs.setValues("pair", orderCreate.getPair());
+        prs.setValues("quantity", orderCreate.getQuantity());
+        prs.setValues("price", orderCreate.getPrice());
+        prs.setValues("type", orderCreate.getType().name());
         prs.setValues("lastPrice", lastPrice);
         prs.setValues("date", new SimpleDateFormat(IExConst.DATE_FORMAT).format(new Date()));
 
@@ -93,4 +92,7 @@ public class UserOrderDao {
         return null;
     }
 
+//    public void deleteAll() {
+//        jdbcTemplate.executeUpdate("DELETE FROM User_Order;");
+//    }
 }

@@ -1,15 +1,13 @@
 package ru.ex4.apibt.service;
 
 import ru.ex4.apibt.IExConst;
-import ru.ex4.apibt.dto.TickerDto;
-import ru.ex4.apibt.dto.TradeDto;
-import ru.ex4.apibt.dto.TrendType;
+import ru.ex4.apibt.model.Ticker;
+import ru.ex4.apibt.model.TrendType;
 import ru.ex4.apibt.log.Logs;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class TrendService {
     public static TrendType getTrendType(String pair) throws IOException {
@@ -28,11 +26,11 @@ public class TrendService {
         double pauseMin = (double) IExConst.LAST_TRADE_PERIOD / iter;
 
         for (int i = 0; i < iter; i++) {
-            TickerDto tickerDto = TickerService.getTickerDtoByPair(pair);
-            if (tickerDto != null) {
-                Logs.info("собираем последнии уник. продажи по lastTrade - " + tickerDto);
+            Ticker ticker = TickerService.getTickerDtoByPair(pair);
+            if (ticker != null) {
+                Logs.info("собираем последнии уник. продажи по lastTrade - " + ticker);
 
-                int lastTradeRound = Math.round(tickerDto.getLastTrade());
+                int lastTradeRound = Math.round(ticker.getLastTrade().floatValue());
                 if (lastTradeList.size() > 0) {
                     int aFloat = lastTradeList.get(lastTradeList.size() - 1);
                     if (lastTradeRound != aFloat) {
@@ -63,6 +61,30 @@ public class TrendService {
             }
         }
         return TrendType.flat;
+
+//        TrendType trendType = null;
+//
+//        if (lastTradeList.size() > 1) {
+//            float lastValue = lastTradeList.get(0);
+//
+//            for (int i = 1; i < lastTradeList.size(); i++) {
+//                int d = Math.round(lastValue) - Math.round(lastTradeList.get(i));
+//                lastValue = lastTradeList.get(i);
+//
+//                if ((trendType == TrendType.upward && d > 0) || (trendType == TrendType.downward && d < 0)) {
+//                    trendType = TrendType.flat;
+//                } else {
+//                    if (d < 0) {
+//                        trendType = TrendType.upward;
+//                    } else if (d > 0) {
+//                        trendType = TrendType.downward;
+//                    } else {
+//                        trendType = TrendType.flat;
+//                    }
+//                }
+//            }
+//        }
+//        return trendType;
     }
 
 

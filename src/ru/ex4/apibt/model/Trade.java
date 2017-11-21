@@ -1,4 +1,4 @@
-package ru.ex4.apibt.dto;
+package ru.ex4.apibt.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -6,31 +6,31 @@ import java.util.Date;
 import java.util.List;
 
 
-public class TradeDto {
+public class Trade {
     //      валютная пара
     @JsonProperty("pair")
     private String pair;
 
     @JsonProperty("values")
-    private List<Trade> trades;
+    private List<TradeValue> tradeValues;
 
-    private TradeDto() {
+    private Trade() {
     }
 
-    public TradeDto(String pair, List<Trade> trades) {
+    public Trade(String pair, List<TradeValue> tradeValues) {
         this.pair = pair;
-        this.trades = trades;
+        this.tradeValues = tradeValues;
     }
 
     public String getPair() {
         return pair;
     }
 
-    public List<Trade> getTrades() {
-        return trades;
+    public List<TradeValue> getTradeValues() {
+        return tradeValues;
     }
 
-    public static class Trade {
+    public static class TradeValue {
         //        идентификатор сделки
         @JsonProperty("trade_id")
         private Long tradeId;
@@ -54,10 +54,10 @@ public class TradeDto {
             this.date = new Date(date * 1000L);
         }
 
-        protected Trade() {
+        protected TradeValue() {
         }
 
-        public Trade(float amount, Date date, float price, float quantity, Long tradeId, TypeOrder type) {
+        public TradeValue(float amount, Date date, float price, float quantity, Long tradeId, TypeOrder type) {
             this.amount = amount;
             this.date = date;
             this.price = price;
@@ -93,7 +93,7 @@ public class TradeDto {
 
         @Override
         public String toString() {
-            return "Trade{" +
+            return "TradeValue{" +
                     "tradeId=" + tradeId +
                     ", type=" + type +
                     ", price=" + price +
