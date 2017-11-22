@@ -1,7 +1,7 @@
 package ru.ex4.apibt.extermod;
 
 import ru.ex4.apibt.MainProperties;
-import ru.ex4.apibt.dto.*;
+import ru.ex4.apibt.model.*;
 import ru.ex4.apibt.extermod.processing.JSONProcessor;
 
 import java.io.IOException;
@@ -47,51 +47,51 @@ public class ExFactory {
     }
 
     //      Настройки валютных пар
-    public List<PairSettingDto> getPairSettings() throws IOException {
+    public List<PairSetting> getPairSettings() throws IOException {
         String pair_settings = requestPlugin.get("pair_settings", null);
-        return new JSONProcessor<PairSettingDto>().process(PairSettingDto.class, pair_settings);
+        return new JSONProcessor<PairSetting>().process(PairSetting.class, pair_settings);
     }
 
     //      Книга ордеров по валютной паре
-    public List<OrderBookDto> getOrderBook(String pair, Integer limit) throws IOException {
+    public List<OrderBook> getOrderBook(String pair, Integer limit) throws IOException {
         HashMap<String, String> arguments = new HashMap<>();
         arguments.put("pair", pair);
         if (limit != null && limit <= 1000) {
             arguments.put("limit", String.valueOf(limit));
         }
         String order_book = requestPlugin.get("order_book", arguments);
-        return new JSONProcessor<OrderBookDto>().process(OrderBookDto.class, order_book);
+        return new JSONProcessor<OrderBook>().process(OrderBook.class, order_book);
     }
 
     //      Cтатистика цен и объемов торгов по валютным парам
-    public List<TickerDto> getTicker() throws IOException {
+    public List<Ticker> getTicker() throws IOException {
         String ticker = requestPlugin.get("ticker", null);
-        return new JSONProcessor<TickerDto>().process(TickerDto.class, ticker);
+        return new JSONProcessor<Ticker>().process(Ticker.class, ticker);
     }
 
     //      Список сделок по валютной паре
-    public List<TradeDto> getTrades(String pair) throws IOException {
+    public List<Trade> getTrades(String pair) throws IOException {
         HashMap<String, String> arguments = new HashMap<>();
         arguments.put("pair", pair);
 
         String trades = requestPlugin.get("trades", arguments);
-        return new JSONProcessor<TradeDto>().process(TradeDto.class, trades);
+        return new JSONProcessor<Trade>().process(Trade.class, trades);
     }
 
     //      Получение информации об аккаунте пользователя
-    public UserInfoDto getUserInfo() throws IOException {
+    public UserInfo getUserInfo() throws IOException {
         String userInfo = requestPlugin.post("user_info", null);
-        return new JSONProcessor<UserInfoDto>().processSimple(UserInfoDto.class, userInfo);
+        return new JSONProcessor<UserInfo>().processSimple(UserInfo.class, userInfo);
     }
 
     //      Получение списока открытых ордеров пользователя
-    public List<UserOpenOrderDto> getUserOpenOrders() throws IOException {
+    public List<UserOpenOrder> getUserOpenOrders() throws IOException {
         String userOpenOrders = requestPlugin.post("user_open_orders", null);
-        return new JSONProcessor<UserOpenOrderDto>().process(UserOpenOrderDto.class, userOpenOrders);
+        return new JSONProcessor<UserOpenOrder>().process(UserOpenOrder.class, userOpenOrders);
     }
 
     //      Получение сделок пользователя
-    public List<UserTradeDto> getUserTrades(String pair, Integer limit) throws IOException {
+    public List<UserTrade> getUserTrades(String pair, Integer limit) throws IOException {
         HashMap<String, String> arguments = new HashMap<>();
         arguments.put("pair", pair);
         arguments.put("offset", "0");
@@ -100,28 +100,28 @@ public class ExFactory {
         }
 
         String userTrades = requestPlugin.post("user_trades", arguments);
-        return new JSONProcessor<UserTradeDto>().process(UserTradeDto.class, userTrades);
+        return new JSONProcessor<UserTrade>().process(UserTrade.class, userTrades);
     }
 
     //      Создание ордера
-    public OrderCreateResultDto orderCreate(OrderCreateDto orderCreateDto) throws IOException {
+    public OrderCreateResult orderCreate(OrderCreate orderCreate) throws IOException {
         HashMap<String, String> arguments = new HashMap<>();
-        arguments.put("pair", orderCreateDto.getPair());
-        arguments.put("quantity", String.valueOf(orderCreateDto.getQuantity()));
-        arguments.put("price", String.valueOf(orderCreateDto.getPrice()));
-        arguments.put("type", orderCreateDto.getType().name());
+        arguments.put("pair", orderCreate.getPair());
+        arguments.put("quantity", String.valueOf(orderCreate.getQuantity()));
+        arguments.put("price", String.valueOf(orderCreate.getPrice()));
+        arguments.put("type", orderCreate.getType().name());
 
         String orderCreated = requestPlugin.post("order_create", arguments);
-        return new JSONProcessor<OrderCreateResultDto>().processSimple(OrderCreateResultDto.class, orderCreated);
+        return new JSONProcessor<OrderCreateResult>().processSimple(OrderCreateResult.class, orderCreated);
     }
 
     //    Отмена ордера
-    public OrderCreateResultDto orderCancel(String orderId) throws IOException {
+    public OrderCreateResult orderCancel(String orderId) throws IOException {
         HashMap<String, String> arguments = new HashMap<>();
         arguments.put("order_id", orderId);
 
         String orderCanceled = requestPlugin.post("order_cancel", arguments);
-        return new JSONProcessor<OrderCreateResultDto>().processSimple(OrderCreateResultDto.class, orderCanceled);
+        return new JSONProcessor<OrderCreateResult>().processSimple(OrderCreateResult.class, orderCanceled);
     }
 
     //    Подсчет в какую сумму обойдется покупка определенного кол-ва валюты по конкретной валютной паре

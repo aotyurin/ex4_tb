@@ -1,6 +1,6 @@
-package ru.ex4.apibt.dto;
+package ru.ex4.apibt.model;
 
-public class OrderCreateDto {
+public class OrderCreate {
     //      валютная пара
     private String pair;
     //    кол-во по ордеру
@@ -11,7 +11,7 @@ public class OrderCreateDto {
     private TypeOrder type;
 
 
-    public OrderCreateDto(String pair, float quantity, float price, TypeOrder type) {
+    public OrderCreate(String pair, float quantity, float price, TypeOrder type) {
         this.pair = pair;
         this.price = price;
         this.quantity = quantity;

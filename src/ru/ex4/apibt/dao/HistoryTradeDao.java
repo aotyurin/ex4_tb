@@ -3,8 +3,8 @@ package ru.ex4.apibt.dao;
 import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
-import ru.ex4.apibt.dto.TypeOrder;
-import ru.ex4.apibt.dto.UserTradeDto;
+import ru.ex4.apibt.model.TypeOrder;
+import ru.ex4.apibt.model.UserTrade;
 import ru.ex4.apibt.log.Logs;
 
 import java.sql.ResultSet;
@@ -27,7 +27,7 @@ public class HistoryTradeDao {
     }
 
 
-    public List<UserTradeDto.UserTrade> UserTradeDto(String orderId) {
+    public List<UserTrade.UserTradeValue> UserTradeDto(String orderId) {
         try {
             String sql = "SELECT \n" +
                     "  orderId, \n" +
@@ -44,11 +44,11 @@ public class HistoryTradeDao {
             PreparedParamsSetter prs = new PreparedParamsSetter();
             prs.setValues("orderId", orderId);
 
-            List<UserTradeDto.UserTrade> trades = new ArrayList<>();
+            List<UserTrade.UserTradeValue> trades = new ArrayList<>();
 
             ResultSet resultSet = jdbcTemplate.executeQuery(sql, prs);
             while (resultSet.next()) {
-                trades.add(new UserTradeDto.UserTrade(resultSet.getString("orderId"),
+                trades.add(new UserTrade.UserTradeValue(resultSet.getString("orderId"),
                         resultSet.getString("pair"),
                         resultSet.getFloat("amount"),
                         new SimpleDateFormat(IExConst.DATE_FORMAT).parse(resultSet.getString("date")),
@@ -65,11 +65,11 @@ public class HistoryTradeDao {
         return Collections.emptyList();
     }
 
-    public void update(List<UserTradeDto> userTrades) {
+    public void update(List<UserTrade> userTrades) {
         String sql = "INSERT OR REPLACE INTO History_Trades VALUES (:orderId, :pair, :tradeId, :type, :price, :quantity, :amount, :date);";
-        for (UserTradeDto userTrade : userTrades) {
-            List<UserTradeDto.UserTrade> trades = userTrade.getTrades();
-            for (UserTradeDto.UserTrade trade : trades) {
+        for (UserTrade userTrade : userTrades) {
+            List<UserTrade.UserTradeValue> trades = userTrade.getTrades();
+            for (UserTrade.UserTradeValue trade : trades) {
                 PreparedParamsSetter prs = new PreparedParamsSetter();
                 prs.setValues("orderId", trade.getOrderId());
                 prs.setValues("pair", trade.getPair());

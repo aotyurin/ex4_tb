@@ -1,8 +1,8 @@
-package ru.ex4.apibt.dto;
+package ru.ex4.apibt.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class PairSettingDto {
+public class PairSetting {
     //      валютная пара
     @JsonProperty("pair")
     private String pair;
@@ -26,10 +26,10 @@ public class PairSettingDto {
     private float maxAmount;
 
 
-    private PairSettingDto() {
+    private PairSetting() {
     }
 
-    public PairSettingDto(String pair, float minQuantity, float maxQuantity, float minPrice, float maxPrice, float minAmount, float maxAmount) {
+    public PairSetting(String pair, float minQuantity, float maxQuantity, float minPrice, float maxPrice, float minAmount, float maxAmount) {
         this.pair = pair;
         this.minQuantity = minQuantity;
         this.maxQuantity = maxQuantity;
@@ -70,7 +70,7 @@ public class PairSettingDto {
 
     @Override
     public String toString() {
-        return "PairSettingDto{" +
+        return "PairSetting{" +
                 "pair='" + pair + '\'' +
                 ", minQuantity=" + minQuantity +
                 ", maxQuantity=" + maxQuantity +

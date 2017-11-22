@@ -1,8 +1,7 @@
 package ru.ex4.apibt.service;
 
-import junit.framework.Assert;
 import org.junit.Test;
-import ru.ex4.apibt.dto.TrendType;
+import ru.ex4.apibt.model.TrendType;
 
 import java.io.IOException;
 import java.util.ArrayList;

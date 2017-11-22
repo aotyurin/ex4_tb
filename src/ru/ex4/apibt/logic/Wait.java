@@ -1,7 +1,7 @@
 package ru.ex4.apibt.logic;
 
 import ru.ex4.apibt.IExConst;
-import ru.ex4.apibt.dto.TrendType;
+import ru.ex4.apibt.model.TrendType;
 import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.service.TrendService;
 

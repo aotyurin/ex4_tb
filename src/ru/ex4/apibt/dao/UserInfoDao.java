@@ -1,12 +1,17 @@
 package ru.ex4.apibt.dao;
 
+import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
-import ru.ex4.apibt.dto.UserInfoDto;
+import ru.ex4.apibt.model.UserInfo;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class UserInfoDao {
@@ -25,7 +30,7 @@ public class UserInfoDao {
             String sql = "SELECT\n" +
                     "  uid,\n" +
                     "  currency,\n" +
-                    "  amount\n" +
+                    "  amountBalance\n" +
                     "FROM User_Info_Balance \n" +
                     "WHERE currency = :currency ;";
             PreparedParamsSetter prs = new PreparedParamsSetter();
@@ -34,7 +39,7 @@ public class UserInfoDao {
             List<Float> balances = new ArrayList<>();
             ResultSet resultSet = jdbcTemplate.executeQuery(sql, prs);
             while (resultSet.next()) {
-                balances.add(resultSet.getFloat("amount"));
+                balances.add(resultSet.getFloat("amountBalance"));
             }
             if (balances.size() > 1 || balances.isEmpty()) {
                 throw new RuntimeException("userInfo sql: записей не найдено или их более одной");
@@ -47,52 +52,49 @@ public class UserInfoDao {
         return 0;
     }
 
-    public float getReserved(String currency) {
-        try {
-            String sql = "SELECT\n" +
-                    "  uid,\n" +
-                    "  currency,\n" +
-                    "  amount\n" +
-                    "FROM User_Info_Reserved \n" +
-                    "WHERE currency = :currency ;";
-            PreparedParamsSetter prs = new PreparedParamsSetter();
-            prs.setValues("currency", currency);
+    public UserInfo getUserInfo() throws SQLException, ParseException {
+        String sql = "SELECT \n" +
+                "  uid, \n" +
+                "  currency, \n" +
+                "  amountBalance, \n" +
+                "  amountReserved, \n" +
+                "  serverData \n" +
+                "FROM User_Info_Balance;";
 
-            List<Float> reserved = new ArrayList<>();
-            ResultSet resultSet = jdbcTemplate.executeQuery(sql, prs);
-            while (resultSet.next()) {
-                reserved.add(resultSet.getFloat("amount"));
-            }
-            if (reserved.size() > 1 || reserved.isEmpty()) {
-                throw new RuntimeException("userInfo sql: записей не найдено или их более одной");
-            }
-            return reserved.get(0);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        ArrayList<UserInfo.BalanceValue> balanceValues = new ArrayList<>();
+        UserInfo balanceInfo = new UserInfo();
+        String uid = null;
+        Date serverData = null;
+        ResultSet resultSet = jdbcTemplate.executeQuery(sql);
+        while (resultSet.next()) {
+            uid = resultSet.getString("uid");
+            serverData = new SimpleDateFormat(IExConst.DATE_FORMAT).parse(resultSet.getString("serverData"));
+            String currency = resultSet.getString("currency");
+            BigDecimal amountBalance = resultSet.getBigDecimal("amountBalance");
+            BigDecimal amountReserved = resultSet.getBigDecimal("amountReserved");
+
+            balanceValues.add(balanceInfo.new BalanceValue(currency, amountBalance, amountReserved));
         }
-
-        return 0;
+        return new UserInfo(uid, serverData, balanceValues);
     }
 
-    public void update(UserInfoDto userInfo) {
+
+    public void update(UserInfo userInfo) {
+        String sql = "INSERT OR REPLACE INTO User_Info_Balance VALUES (:uid, :currency, :amountBalance, :amountReserved, :serverData);";
+
         String uid = userInfo.getUid();
+        Date serverData = userInfo.getServerData();
 
-        ArrayList<UserInfoDto.Balance> balances = userInfo.getBalances();
-        for (UserInfoDto.Balance balance : balances) {
+        ArrayList<UserInfo.BalanceValue> balanceValues = userInfo.getBalanceValues();
+        for (UserInfo.BalanceValue balanceValue : balanceValues) {
             PreparedParamsSetter prs = new PreparedParamsSetter();
             prs.setValues("uid", uid);
-            prs.setValues("currency", balance.getCurrency());
-            prs.setValues("amount", balance.getAmount());
-            jdbcTemplate.executeUpdate("INSERT OR REPLACE INTO User_Info_Balance VALUES (:uid, :currency, :amount);", prs);
-        }
+            prs.setValues("currency", balanceValue.getCurrency());
+            prs.setValues("amountBalance", balanceValue.getAmountBalance());
+            prs.setValues("amountReserved", balanceValue.getAmountReserved());
+            prs.setValues("serverData", new SimpleDateFormat(IExConst.DATE_FORMAT).format(serverData));
 
-        ArrayList<UserInfoDto.Balance> reserved = userInfo.getReserved();
-        for (UserInfoDto.Balance balance : reserved) {
-            PreparedParamsSetter prs = new PreparedParamsSetter();
-            prs.setValues("uid", uid);
-            prs.setValues("currency", balance.getCurrency());
-            prs.setValues("amount", balance.getAmount());
-            jdbcTemplate.executeUpdate("INSERT OR REPLACE INTO User_Info_Reserved VALUES (:uid, :currency, :amount);", prs);
+            jdbcTemplate.executeUpdate(sql, prs);
         }
     }
 

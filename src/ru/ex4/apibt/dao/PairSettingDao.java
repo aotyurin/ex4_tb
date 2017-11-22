@@ -2,7 +2,7 @@ package ru.ex4.apibt.dao;
 
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
-import ru.ex4.apibt.dto.PairSettingDto;
+import ru.ex4.apibt.model.PairSetting;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +20,7 @@ public class PairSettingDao {
         }
     }
 
-    public PairSettingDto getPairSettingByPair(String pair) {
+    public PairSetting getPairSettingByPair(String pair) {
         try {
             String sql = "SELECT\n" +
                     "  pair,\n" +
@@ -36,9 +36,9 @@ public class PairSettingDao {
             prs.setValues("pair", pair);
 
             ResultSet resultSet = jdbcTemplate.executeQuery(sql, prs);
-            List<PairSettingDto> pairSettingDtos = new ArrayList<>();
+            List<PairSetting> pairSettings = new ArrayList<>();
             while (resultSet.next()) {
-                pairSettingDtos.add(new PairSettingDto(resultSet.getString("pair"),
+                pairSettings.add(new PairSetting(resultSet.getString("pair"),
                         resultSet.getFloat("minQuantity"),
                         resultSet.getFloat("maxQuantity"),
                         resultSet.getFloat("minPrice"),
@@ -46,10 +46,10 @@ public class PairSettingDao {
                         resultSet.getFloat("minAmount"),
                         resultSet.getFloat("maxAmount")));
             }
-            if (pairSettingDtos.size() > 1 || pairSettingDtos.isEmpty()) {
+            if (pairSettings.size() > 1 || pairSettings.isEmpty()) {
                 throw new RuntimeException("pairSetting sql: записей не найдено или их более одной");
             }
-            return pairSettingDtos.get(0);
+            return pairSettings.get(0);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -57,8 +57,8 @@ public class PairSettingDao {
         return null;
     }
 
-    public void update(List<PairSettingDto> pairSettings) {
-        for (PairSettingDto pairSetting : pairSettings) {
+    public void update(List<PairSetting> pairSettings) {
+        for (PairSetting pairSetting : pairSettings) {
             PreparedParamsSetter prs = new PreparedParamsSetter();
             prs.setValues("pair", pairSetting.getPair());
             prs.setValues("minQuantity", pairSetting.getMinQuantity());
