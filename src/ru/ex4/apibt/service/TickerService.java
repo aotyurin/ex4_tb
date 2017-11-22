@@ -29,7 +29,7 @@ public class TickerService {
     }
 
 
-    public static List<TickerDto> getTickerListByCurrency(String currency) {
+    public static List<TickerDto> getTickerDtoListByCurrency(String currency) {
         List<TickerDto> tickerDtoList = new ArrayList<>();
         try {
             List<Ticker> tickerList = exFactory.getTicker();

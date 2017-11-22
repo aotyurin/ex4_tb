@@ -1,28 +1,28 @@
 package ru.ex4.apibt.view;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
+import ru.ex4.apibt.dto.OrderBookDto;
 import ru.ex4.apibt.dto.TickerDto;
 import ru.ex4.apibt.dto.UserBalanceDto;
 import ru.ex4.apibt.log.Logs;
+import ru.ex4.apibt.service.OrderBookService;
 import ru.ex4.apibt.service.TickerService;
 import ru.ex4.apibt.service.UserInfoService;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class BaseController {
     private ObservableList<UserBalanceDto> userBalanceObservableList;
     private ObservableList<TickerDto> tickerPairObservableList;
+    private ObservableList<OrderBookDto.Ask> askOrderBookObservableList;
+    private ObservableList<OrderBookDto.Bid> bidOrderBookObservableList;
     private UserInfoService userInfoService;
+    private OrderBookService orderBookService;
 
     @FXML
     private TableView<UserBalanceDto> userBalanceTable;
@@ -36,19 +36,36 @@ public class BaseController {
     @FXML
     private TableView<TickerDto> tickerPairTable;
     @FXML
-    private TableColumn<TickerDto, String> pairColumn;
+    private TableColumn<TickerDto, String> pairTickerPairTableColumn;
     @FXML
-    private TableColumn<TickerDto, Number> buyPriceColumn;
+    private TableColumn<TickerDto, Number> buyPriceTickerPairTableColumn;
     @FXML
-    private TableColumn<TickerDto, Number> sellPriceColumn;
+    private TableColumn<TickerDto, Number> sellPriceTickerPairTableColumn;
     @FXML
-    private TableColumn<TickerDto, Number> volatPresentColumn;
+    private TableColumn<TickerDto, Number> volatPresentTickerPairTableColumn;
     @FXML
-    private TableColumn<TickerDto, Number> changePricePresentColumn;
+    private TableColumn<TickerDto, Number> changePricePresentTickerPairTableColumn;
     @FXML
-    private TableColumn<TickerDto, Boolean> changePriceFactorColumn;
+    private TableColumn<TickerDto, Boolean> changePriceFactorTickerPairTableColumn;
     @FXML
-    private TableColumn<TickerDto, String> volumeColumn;
+    private TableColumn<TickerDto, String> volumeTickerPairTableColumn;
+
+    @FXML
+    private TableView<OrderBookDto.Ask> askOrderBookTable;
+    @FXML
+    private TableColumn<OrderBookDto.Ask, Number> amountAskOrderBookTableColumn;
+    @FXML
+    private TableColumn<OrderBookDto.Ask, Number> priceAskOrderBookTableColumn;
+    @FXML
+    private TableColumn<OrderBookDto.Ask, Number> quantityAskOrderBookTableColumn;
+    @FXML
+    private TableView<OrderBookDto.Bid> bidOrderBookTable;
+    @FXML
+    private TableColumn<OrderBookDto.Bid, Number> amountBidOrderBookTableColumn;
+    @FXML
+    private TableColumn<OrderBookDto.Bid, Number> priceBidOrderBookTableColumn;
+    @FXML
+    private TableColumn<OrderBookDto.Bid, Number> quantityBidOrderBookTableColumn;
 
     @FXML
     private Label realLabel;
@@ -57,7 +74,11 @@ public class BaseController {
     public BaseController() {
         this.userBalanceObservableList = FXCollections.observableArrayList();
         this.tickerPairObservableList = FXCollections.observableArrayList();
+        this.askOrderBookObservableList = FXCollections.observableArrayList();
+        this.bidOrderBookObservableList = FXCollections.observableArrayList();
+
         this.userInfoService = new UserInfoService();
+        this.orderBookService = new OrderBookService();
     }
 
     @FXML
@@ -65,10 +86,7 @@ public class BaseController {
         Logs.info("initialize baseView");
 
         fillBalanceTable();
-
         fillBalanceTableColumn();
-
-//        fillLabel(null);
 
         addListener();
     }
@@ -85,34 +103,70 @@ public class BaseController {
         this.amountReservedColumn.setCellValueFactory(param -> param.getValue().amountReservedProperty());
     }
 
-//    private void fillLabel(Object o) {
-//
-//    }
-
     private void addListener() {
         this.userBalanceTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            fillPairTable(newValue.currencyProperty().get());
+            fillTickerPairTable(newValue.currencyProperty().get());
             fillTickerPairTableColumn();
+        });
+        this.tickerPairTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            String pair = newValue.pairProperty().get();
+            fillOrderBookTable(pair);
+            fillOrderBookTableColumn();
+            fillOpenOrderTable(pair);
+            fillOpenOrderTableColumn();
+
         });
     }
 
-    private void fillPairTable(String currency) {
+    private void fillTickerPairTable(String currency) {
         System.out.println(currency);
 
         this.tickerPairObservableList.clear();
-        List<TickerDto> tickerDtoList = TickerService.getTickerListByCurrency(currency);
+        List<TickerDto> tickerDtoList = TickerService.getTickerDtoListByCurrency(currency);
         this.tickerPairObservableList.addAll(tickerDtoList);
         this.tickerPairTable.setItems(tickerPairObservableList);
     }
 
     private void fillTickerPairTableColumn() {
-        this.pairColumn.setCellValueFactory(param -> param.getValue().pairProperty());
-        this.buyPriceColumn.setCellValueFactory(param -> param.getValue().buyPriceProperty());
-        this.sellPriceColumn.setCellValueFactory(param -> param.getValue().sellPriceProperty());
-        this.volatPresentColumn.setCellValueFactory(param -> param.getValue().volatPresentProperty());
-        this.changePriceFactorColumn.setCellValueFactory(param -> param.getValue().changePriceFactorProperty());
-        this.changePricePresentColumn.setCellValueFactory(param -> param.getValue().changePricePresentProperty());
-        this.volumeColumn.setCellValueFactory(param -> param.getValue().volumeProperty());
+        this.pairTickerPairTableColumn.setCellValueFactory(param -> param.getValue().pairProperty());
+        this.buyPriceTickerPairTableColumn.setCellValueFactory(param -> param.getValue().buyPriceProperty());
+        this.sellPriceTickerPairTableColumn.setCellValueFactory(param -> param.getValue().sellPriceProperty());
+        this.volatPresentTickerPairTableColumn.setCellValueFactory(param -> param.getValue().volatPresentProperty());
+        this.changePriceFactorTickerPairTableColumn.setCellValueFactory(param -> param.getValue().changePriceFactorProperty());
+        this.changePricePresentTickerPairTableColumn.setCellValueFactory(param -> param.getValue().changePricePresentProperty());
+        this.volumeTickerPairTableColumn.setCellValueFactory(param -> param.getValue().volumeProperty());
+    }
+
+
+    private void fillOrderBookTable(String pair) {
+        this.askOrderBookObservableList.clear();
+        this.bidOrderBookObservableList.clear();
+
+        OrderBookDto orderBookDto = orderBookService.getOrderBookDtoByPair(pair);
+        this.askOrderBookObservableList.addAll(orderBookDto.getAskList());
+        this.askOrderBookTable.setItems(askOrderBookObservableList);
+
+        this.bidOrderBookObservableList.addAll(orderBookDto.getBidList());
+        this.bidOrderBookTable.setItems(bidOrderBookObservableList);
+    }
+
+    private void fillOrderBookTableColumn() {
+        this.amountAskOrderBookTableColumn.setCellValueFactory(param -> param.getValue().amountProperty());
+        this.priceAskOrderBookTableColumn.setCellValueFactory(param -> param.getValue().priceProperty());
+        this.quantityAskOrderBookTableColumn.setCellValueFactory(param -> param.getValue().quantityProperty());
+
+        this.amountBidOrderBookTableColumn.setCellValueFactory(param -> param.getValue().amountProperty());
+        this.priceBidOrderBookTableColumn.setCellValueFactory(param -> param.getValue().priceProperty());
+        this.quantityBidOrderBookTableColumn.setCellValueFactory(param -> param.getValue().quantityProperty());
+    }
+
+
+    private void fillOpenOrderTable(String pair) {
+
+    }
+
+    private void fillOpenOrderTableColumn() {
+
     }
 
 }

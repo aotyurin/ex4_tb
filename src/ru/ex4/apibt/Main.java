@@ -19,10 +19,6 @@ public class Main extends Application{
 
         InitBaseService.init();
 
-//        ExFactory exFactory = ExFactory.exFactoryInstance();
-//        List<OrderBook> orderBook = exFactory.getOrderBook(IExConst.PAIR, null);
-
-
         AutoAuctionThread autoAuction = new AutoAuctionThread();
 
         Scanner scanner = new Scanner(System.in);
