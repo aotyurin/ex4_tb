@@ -1,15 +1,14 @@
 package ru.ex4.apibt.dao;
 
-import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
 import ru.ex4.apibt.model.UserInfo;
+import ru.ex4.apibt.util.DateUtil;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -68,7 +67,7 @@ public class UserInfoDao {
         ResultSet resultSet = jdbcTemplate.executeQuery(sql);
         while (resultSet.next()) {
             uid = resultSet.getString("uid");
-            serverData = new SimpleDateFormat(IExConst.DATE_FORMAT).parse(resultSet.getString("serverData"));
+            serverData = DateUtil.parse(resultSet.getString("serverData"));
             String currency = resultSet.getString("currency");
             BigDecimal amountBalance = resultSet.getBigDecimal("amountBalance");
             BigDecimal amountReserved = resultSet.getBigDecimal("amountReserved");
@@ -92,7 +91,7 @@ public class UserInfoDao {
             prs.setValues("currency", balanceValue.getCurrency());
             prs.setValues("amountBalance", balanceValue.getAmountBalance());
             prs.setValues("amountReserved", balanceValue.getAmountReserved());
-            prs.setValues("serverData", new SimpleDateFormat(IExConst.DATE_FORMAT).format(serverData));
+            prs.setValues("serverData", DateUtil.format(serverData));
 
             jdbcTemplate.executeUpdate(sql, prs);
         }

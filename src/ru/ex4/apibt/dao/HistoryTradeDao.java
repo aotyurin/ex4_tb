@@ -1,16 +1,15 @@
 package ru.ex4.apibt.dao;
 
-import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
+import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.model.TypeOrder;
 import ru.ex4.apibt.model.UserTrade;
-import ru.ex4.apibt.log.Logs;
+import ru.ex4.apibt.util.DateUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +50,7 @@ public class HistoryTradeDao {
                 trades.add(new UserTrade.UserTradeValue(resultSet.getString("orderId"),
                         resultSet.getString("pair"),
                         resultSet.getFloat("amount"),
-                        new SimpleDateFormat(IExConst.DATE_FORMAT).parse(resultSet.getString("date")),
+                        DateUtil.parse(resultSet.getString("date")),
                         resultSet.getFloat("price"),
                         resultSet.getFloat("quantity"),
                         resultSet.getLong("tradeId"),
@@ -78,7 +77,7 @@ public class HistoryTradeDao {
                 prs.setValues("price", trade.getPrice());
                 prs.setValues("quantity", trade.getQuantity());
                 prs.setValues("amount", trade.getAmount());
-                prs.setValues("date", new SimpleDateFormat(IExConst.DATE_FORMAT).format(trade.getDate()));
+                prs.setValues("date", DateUtil.format(trade.getDate()));
 
 
                 jdbcTemplate.executeUpdate(sql, prs);

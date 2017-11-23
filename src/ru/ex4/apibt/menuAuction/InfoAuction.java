@@ -26,20 +26,23 @@ public class InfoAuction {
             });
 
             List<Ticker> tickerList = TickerService.getTickerDtos();
-            tickerList.forEach(tdo -> {
-                final String[] s = {""};
-                PairSetting pairSettingByPair = PairSettingsService.getPairSettingByPair(tdo.getPair());
-                float minBalances = tdo.getBuyPrice().floatValue() * pairSettingByPair.getMinQuantity() + (tdo.getBuyPrice().floatValue() * pairSettingByPair.getMinQuantity()) * IExConst.STOCK_FEE;
+            for (Ticker ticker : tickerList) {
+                final String[] s = {"", ""};
+                PairSetting pairSettingByPair = PairSettingsService.getPairSettingByPair(ticker.getPair());
+                float minBalances = ticker.getBuyPrice().floatValue() * pairSettingByPair.getMinQuantity() + (ticker.getBuyPrice().floatValue() * pairSettingByPair.getMinQuantity()) * IExConst.STOCK_FEE;
 
-                balanceList.forEach(balance -> {
-                    if (balance.getAmountBalance().floatValue() > minBalances && (tdo.getPair().contains("_" + balance.getCurrency()))) {
-                        if (tdo.getBuyPrice().floatValue() < tdo.getAvg()) {
-                            s[0] = "- BUY ";
-                        }
+                for (UserInfo.BalanceValue balance : balanceList) {
+//                    if (balance.getAmountBalance().floatValue() > minBalances) {
+                    if ((ticker.getPair().endsWith(IExConst.PAIR_PREFIX + balance.getCurrency())) && ticker.getSellPrice().floatValue() < ticker.getAvg()) {
+                        s[0] = "- BUY ";
+                    } else if (ticker.getPair().startsWith(balance.getCurrency() + IExConst.PAIR_PREFIX) && ticker.getBuyPrice().floatValue() > ticker.getAvg()) {
+                        s[1] = "- SELL ";
                     }
-                });
-                System.out.println(s[0] + tdo.toString() + ", \t\t волатильность: " + ((tdo.getHigh() - tdo.getLow()) / tdo.getLow() * 100));
-            });
+//                    }
+
+                }
+                System.out.println(s[0] + ticker.toString() + ", \t\t волатильность: " + ((ticker.getHigh() - ticker.getLow()) / ticker.getLow() * 100));
+            }
 
 
         } catch (IOException | SQLException | ParseException e) {

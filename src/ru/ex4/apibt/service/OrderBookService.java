@@ -26,11 +26,11 @@ public class OrderBookService {
             orderBookList.stream().filter(orderBook -> orderBook.getPair().equals(pair)).forEach(orderBook -> {
                 ArrayList<OrderBook.OrderValue> orderBookAskList = orderBook.getAsk();
                 for (OrderBook.OrderValue orderValueAsk : orderBookAskList) {
-                    askArrayList.add(obHelper.new Ask(orderValueAsk.getAmount(), orderValueAsk.getPrice(), orderValueAsk.getQuantity()));
+                    askArrayList.add(obHelper.new Ask(orderValueAsk.getPrice(), orderValueAsk.getQuantity(), orderValueAsk.getAmount()));
                 }
                 ArrayList<OrderBook.OrderValue> orderBookBidList = orderBook.getBid();
                 for (OrderBook.OrderValue orderValueBid : orderBookBidList) {
-                    bidArrayList.add(obHelper.new Bid(orderValueBid.getAmount(), orderValueBid.getPrice(), orderValueBid.getQuantity()));
+                    bidArrayList.add(obHelper.new Bid(orderValueBid.getPrice(), orderValueBid.getQuantity(), orderValueBid.getAmount()));
                 }
             });
         } catch (IOException e) {

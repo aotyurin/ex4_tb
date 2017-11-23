@@ -31,7 +31,7 @@ public class OpenOrder {
                 if (tickerByPair != null) {
                     // отклонение цены от текущей в процентах
                     float sellPrice1 = tickerByPair.getSellPrice().floatValue();
-                    float deviationPrice = (userOpenOrderValue.getPrice() - sellPrice1) / sellPrice1 * 100;
+                    float deviationPrice = (userOpenOrderValue.getPrice().floatValue() - sellPrice1) / sellPrice1 * 100;
                     Logs.info(String.format(" - отклонение цены ордера от текущей в процентах: %1$s, цена ордера: %2$s, цена продажи: %3$s",
                             deviationPrice, userOpenOrderValue.getPrice(), sellPrice1));
 
@@ -60,7 +60,7 @@ public class OpenOrder {
                                     tickerByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
                                     if (tickerByPair != null) {
                                         sellPrice = tickerByPair.getSellPrice().floatValue();
-                                        float deviationPrice2 = (userOpenOrderValue.getPrice() - sellPrice) / sellPrice * 100;
+                                        float deviationPrice2 = (userOpenOrderValue.getPrice().floatValue() - sellPrice) / sellPrice * 100;
                                         Logs.info(String.format(" - повышаем ордер. отклонение цены ордера от текущей в процентах: %1$s, цена ордера: %2$s, цена продажи: %3$s",
                                                 deviationPrice2, userOpenOrderValue.getPrice(), sellPrice));
                                         if (deviationPrice2 < deviationPrice) {

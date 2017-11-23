@@ -8,7 +8,9 @@ import java.util.List;
 
 public class OrderBookDto {
     private String pair;
+    //  продажа
     private List<Ask> askList;
+    //  покупка
     private List<Bid> bidList;
 
     public OrderBookDto() {
@@ -34,32 +36,31 @@ public class OrderBookDto {
 
 
     public class Ask extends OrderBookValue {
-        public Ask(BigDecimal amount, BigDecimal price, BigDecimal quantity) {
-            super(amount, price, quantity);
+        public Ask(BigDecimal price, BigDecimal quantity, BigDecimal amount) {
+            super(price, quantity, amount);
         }
     }
 
     public class Bid extends OrderBookValue {
-        public Bid(BigDecimal amount, BigDecimal price, BigDecimal quantity) {
-            super(amount, price, quantity);
+        public Bid(BigDecimal price, BigDecimal quantity, BigDecimal amount) {
+            super(price, quantity, amount);
         }
     }
 
 
 
     private class OrderBookValue {
-        private BigDecimal amount;
+        //  Цена
         private BigDecimal price;
+        //  Количество
         private BigDecimal quantity;
+        //  Сумма
+        private BigDecimal amount;
 
-        public OrderBookValue(BigDecimal amount, BigDecimal price, BigDecimal quantity) {
+        public OrderBookValue(BigDecimal price, BigDecimal quantity, BigDecimal amount) {
             this.price = price;
             this.quantity = quantity;
             this.amount = amount;
-        }
-
-        public FloatProperty amountProperty() {
-            return new SimpleFloatProperty(amount.floatValue());
         }
 
         public FloatProperty priceProperty() {
@@ -68,6 +69,10 @@ public class OrderBookDto {
 
         public FloatProperty quantityProperty() {
             return new SimpleFloatProperty(quantity.floatValue());
+        }
+
+        public FloatProperty amountProperty() {
+            return new SimpleFloatProperty(amount.floatValue());
         }
     }
 
