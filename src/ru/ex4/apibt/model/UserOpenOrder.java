@@ -2,6 +2,7 @@ package ru.ex4.apibt.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -43,13 +44,13 @@ public class UserOpenOrder {
         private TypeOrder type;
         //  цена по ордеру
         @JsonProperty("price")
-        private float price;
+        private BigDecimal price;
         //  кол-во по ордеру
         @JsonProperty("quantity")
-        private float quantity;
+        private BigDecimal quantity;
         //   сумма по ордеру
         @JsonProperty("amount")
-        private float amount;
+        private BigDecimal amount;
         //   дата и время создания ордера
         private Date created;
 
@@ -61,7 +62,7 @@ public class UserOpenOrder {
         private UserOpenOrderValue() {
         }
 
-        public UserOpenOrderValue(String orderId, String pair, TypeOrder type, float price, float quantity, float amount, Date created) {
+        public UserOpenOrderValue(String orderId, String pair, TypeOrder type, BigDecimal price, BigDecimal quantity, BigDecimal amount, Date created) {
             this.orderId = orderId;
             this.pair = pair;
             this.type = type;
@@ -84,15 +85,15 @@ public class UserOpenOrder {
             return type;
         }
 
-        public float getPrice() {
+        public BigDecimal getPrice() {
             return price;
         }
 
-        public float getQuantity() {
+        public BigDecimal getQuantity() {
             return quantity;
         }
 
-        public float getAmount() {
+        public BigDecimal getAmount() {
             return amount;
         }
 

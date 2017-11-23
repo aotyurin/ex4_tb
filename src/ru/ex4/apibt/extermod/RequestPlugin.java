@@ -82,9 +82,9 @@ class RequestPlugin {
         //  Now do the actual request
         MediaType form = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
 
-//        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.73.3.147", 3128));
-//        OkHttpClient client = new OkHttpClient.Builder().proxy(proxy).readTimeout(1, TimeUnit.MINUTES).build();
-        OkHttpClient client = new OkHttpClient.Builder().readTimeout(1, TimeUnit.MINUTES).build();
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.73.3.147", 3128));
+        OkHttpClient client = new OkHttpClient.Builder().proxy(proxy).readTimeout(1, TimeUnit.MINUTES).build();
+//        OkHttpClient client = new OkHttpClient.Builder().readTimeout(1, TimeUnit.MINUTES).build();
         try {
             RequestBody body = RequestBody.create(form, postData);
             Request request = new Request.Builder()
@@ -105,9 +105,9 @@ class RequestPlugin {
     final synchronized String get(String method, Map<String, String> arguments) {
         String path = _url + method + "/?" + joinArguments(arguments);
 
-//        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.73.3.147", 3128));
-//        OkHttpClient client = new OkHttpClient.Builder().proxy(proxy).readTimeout(1, TimeUnit.MINUTES).build();
-        OkHttpClient client = new OkHttpClient.Builder().readTimeout(1, TimeUnit.MINUTES).build();
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.73.3.147", 3128));
+        OkHttpClient client = new OkHttpClient.Builder().proxy(proxy).readTimeout(1, TimeUnit.MINUTES).build();
+//        OkHttpClient client = new OkHttpClient.Builder().readTimeout(1, TimeUnit.MINUTES).build();
         Request request = new Request.Builder()
                 .url(path)
                 .get()

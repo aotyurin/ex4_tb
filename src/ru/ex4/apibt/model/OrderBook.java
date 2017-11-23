@@ -57,7 +57,8 @@ public class OrderBook {
             for (Object o : arrayList) {
                 List list = objectMapper.readValue(o.toString(), List.class);
                 if (list != null && list.size() == 3) {
-                    thisOrderValues.add(new OrderValue(BigDecimal.valueOf(Double.valueOf(list.get(0).toString())),
+                    thisOrderValues.add(new OrderValue(
+                            BigDecimal.valueOf(Double.valueOf(list.get(0).toString())),
                             BigDecimal.valueOf(Double.valueOf(list.get(1).toString())),
                             BigDecimal.valueOf(Double.valueOf(list.get(2).toString()))));
                 }
@@ -71,21 +72,17 @@ public class OrderBook {
 
 
     public class OrderValue {
-        private BigDecimal amount;
         private BigDecimal price;
         private BigDecimal quantity;
+        private BigDecimal amount;
 
         public OrderValue() {
         }
 
-        public OrderValue(BigDecimal amount, BigDecimal price, BigDecimal quantity) {
-            this.amount = amount;
+        public OrderValue(BigDecimal price, BigDecimal quantity, BigDecimal amount) {
             this.price = price;
             this.quantity = quantity;
-        }
-
-        public BigDecimal getAmount() {
-            return amount;
+            this.amount = amount;
         }
 
         public BigDecimal getPrice() {
@@ -94,6 +91,10 @@ public class OrderBook {
 
         public BigDecimal getQuantity() {
             return quantity;
+        }
+
+        public BigDecimal getAmount() {
+            return amount;
         }
     }
 

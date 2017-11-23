@@ -6,14 +6,18 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import ru.ex4.apibt.dto.OpenOrderDto;
 import ru.ex4.apibt.dto.OrderBookDto;
 import ru.ex4.apibt.dto.TickerDto;
 import ru.ex4.apibt.dto.UserBalanceDto;
 import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.service.OrderBookService;
+import ru.ex4.apibt.service.OrderService;
 import ru.ex4.apibt.service.TickerService;
 import ru.ex4.apibt.service.UserInfoService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class BaseController {
@@ -21,8 +25,14 @@ public class BaseController {
     private ObservableList<TickerDto> tickerPairObservableList;
     private ObservableList<OrderBookDto.Ask> askOrderBookObservableList;
     private ObservableList<OrderBookDto.Bid> bidOrderBookObservableList;
+    private ObservableList<OpenOrderDto> openOrderObservableList;
+
     private UserInfoService userInfoService;
+    //    private TickerService tickerService;
     private OrderBookService orderBookService;
+    private OrderService orderService;
+
+    private UserBalanceDto userBalanceDto;
 
     @FXML
     private TableView<UserBalanceDto> userBalanceTable;
@@ -68,7 +78,29 @@ public class BaseController {
     private TableColumn<OrderBookDto.Bid, Number> quantityBidOrderBookTableColumn;
 
     @FXML
+    private TableView<OpenOrderDto> openOrderTable;
+    @FXML
+    private TableColumn<OpenOrderDto, String> createdOpenOrderTableColumn;
+    @FXML
+    private TableColumn<OpenOrderDto, String> typeOpenOrderTableColumn;
+    @FXML
+    private TableColumn<OpenOrderDto, Number> priceOpenOrderTableColumn;
+    @FXML
+    private TableColumn<OpenOrderDto, Number> quantityOpenOrderTableColumn;
+    @FXML
+    private TableColumn<OpenOrderDto, Number> amountOpenOrderTableColumn;
+
+    @FXML
     private Label realLabel;
+    @FXML
+    private TextField amountBidTextField;
+    @FXML
+    private TextField priceBidTextField;
+    @FXML
+    private TextField userBalanceBidTextField;
+
+//    @FXML
+//    private TextField quantityBidTextField;
 
 
     public BaseController() {
@@ -76,9 +108,12 @@ public class BaseController {
         this.tickerPairObservableList = FXCollections.observableArrayList();
         this.askOrderBookObservableList = FXCollections.observableArrayList();
         this.bidOrderBookObservableList = FXCollections.observableArrayList();
+        this.openOrderObservableList = FXCollections.observableArrayList();
 
         this.userInfoService = new UserInfoService();
+//        this.tickerService = new TickerService();
         this.orderBookService = new OrderBookService();
+        this.orderService = new OrderService();
     }
 
     @FXML
@@ -105,26 +140,34 @@ public class BaseController {
 
     private void addListener() {
         this.userBalanceTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            fillTickerPairTable(newValue.currencyProperty().get());
+            userBalanceDto = newValue;
+
+            fillTickerPairTable(newValue);
             fillTickerPairTableColumn();
         });
         this.tickerPairTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            String pair = newValue.pairProperty().get();
-            fillOrderBookTable(pair);
+            fillOrderBookTable(newValue);
             fillOrderBookTableColumn();
-            fillOpenOrderTable(pair);
+            fillOpenOrderTable(newValue);
             fillOpenOrderTableColumn();
-
+        });
+        this.askOrderBookTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            fillBidTextField(newValue);
+        });
+        this.bidOrderBookTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            fillAskTextField(newValue);
         });
     }
 
-    private void fillTickerPairTable(String currency) {
-        System.out.println(currency);
 
+    private void fillTickerPairTable(UserBalanceDto userBalanceDto) {
         this.tickerPairObservableList.clear();
-        List<TickerDto> tickerDtoList = TickerService.getTickerDtoListByCurrency(currency);
-        this.tickerPairObservableList.addAll(tickerDtoList);
-        this.tickerPairTable.setItems(tickerPairObservableList);
+
+        if (userBalanceDto != null) {
+            List<TickerDto> tickerDtoList = TickerService.getTickerDtoListByCurrency(userBalanceDto.currencyProperty().get());
+            this.tickerPairObservableList.addAll(tickerDtoList);
+            this.tickerPairTable.setItems(tickerPairObservableList);
+        }
     }
 
     private void fillTickerPairTableColumn() {
@@ -138,16 +181,19 @@ public class BaseController {
     }
 
 
-    private void fillOrderBookTable(String pair) {
+    private void fillOrderBookTable(TickerDto tickerDto) {
         this.askOrderBookObservableList.clear();
         this.bidOrderBookObservableList.clear();
 
-        OrderBookDto orderBookDto = orderBookService.getOrderBookDtoByPair(pair);
-        this.askOrderBookObservableList.addAll(orderBookDto.getAskList());
-        this.askOrderBookTable.setItems(askOrderBookObservableList);
+        if (tickerDto != null) {
+            String pair = tickerDto.pairProperty().get();
+            OrderBookDto orderBookDto = orderBookService.getOrderBookDtoByPair(pair);
+            this.askOrderBookObservableList.addAll(orderBookDto.getAskList());
+            this.askOrderBookTable.setItems(askOrderBookObservableList);
 
-        this.bidOrderBookObservableList.addAll(orderBookDto.getBidList());
-        this.bidOrderBookTable.setItems(bidOrderBookObservableList);
+            this.bidOrderBookObservableList.addAll(orderBookDto.getBidList());
+            this.bidOrderBookTable.setItems(bidOrderBookObservableList);
+        }
     }
 
     private void fillOrderBookTableColumn() {
@@ -161,12 +207,44 @@ public class BaseController {
     }
 
 
-    private void fillOpenOrderTable(String pair) {
+    private void fillOpenOrderTable(TickerDto tickerDto) {
+        this.openOrderObservableList.clear();
 
+        if (tickerDto != null) {
+            String pair = tickerDto.pairProperty().get();
+            List<OpenOrderDto> openOrderDtoList = orderService.getOrderByPair(pair);
+            this.openOrderObservableList.addAll(openOrderDtoList);
+            this.openOrderTable.setItems(openOrderObservableList);
+        }
     }
 
     private void fillOpenOrderTableColumn() {
+        this.createdOpenOrderTableColumn.setCellValueFactory(param -> param.getValue().createdProperty());
+        this.typeOpenOrderTableColumn.setCellValueFactory(param -> param.getValue().typeProperty());
+        this.priceOpenOrderTableColumn.setCellValueFactory(param -> param.getValue().priceProperty());
+        this.quantityOpenOrderTableColumn.setCellValueFactory(param -> param.getValue().quantityProperty());
+        this.amountOpenOrderTableColumn.setCellValueFactory(param -> param.getValue().amountProperty());
+    }
+
+
+    private void fillAskTextField(OrderBookDto.Bid value) {
+        if (value != null) {
+            this.amountBidTextField.setText(String.valueOf(value.amountProperty().get()));
+            this.priceBidTextField.setText(String.valueOf(value.priceProperty().get()));
+//            this.quantityBidTextField.setText(String.valueOf(value.quantityProperty().get()));
+        } else {
+            this.amountBidTextField.setText("");
+            this.priceBidTextField.setText("");
+        }
+
+        if (this.userBalanceDto != null) {
+            this.userBalanceBidTextField.setText(userBalanceDto.amountBalanceProperty().get());
+        }
+    }
+
+    private void fillBidTextField(OrderBookDto.Ask value) {
 
     }
+
 
 }
