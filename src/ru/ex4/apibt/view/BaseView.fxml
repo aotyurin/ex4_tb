@@ -18,7 +18,7 @@
                     <children>
                         <Pane prefHeight="22.0" prefWidth="320.0">
                             <children>
-                                <CheckBox layoutX="127.0" layoutY="3.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="126.0" text="CheckBox" />
+                                <CheckBox fx:id="allCurrencyCheckBox" layoutX="127.0" layoutY="3.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="126.0" text="CheckBox" />
                             </children>
                         </Pane>
                         <HBox layoutX="6.0" layoutY="25.0" prefHeight="176.0" prefWidth="898.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="6.0" AnchorPane.rightAnchor="-6.0" AnchorPane.topAnchor="25.0">
@@ -90,6 +90,12 @@
                                                 <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
                                             </textFill>
                                         </Label>
+                              <MenuButton layoutX="299.0" layoutY="125.0" mnemonicParsing="false" text="MenuButton">
+                                <items>
+                                  <MenuItem mnemonicParsing="false" text="Action 1" />
+                                  <MenuItem mnemonicParsing="false" text="Action 2" />
+                                </items>
+                              </MenuButton>
                                     </children>
                                 </AnchorPane>
                                 <AnchorPane prefHeight="197.0" prefWidth="535.0">
@@ -119,7 +125,13 @@
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                  </rowConstraints>
                               </GridPane>
-                                        <Label alignment="CENTER" font="$x1" layoutX="361.0" layoutY="14.0" style="&#10;" text="Details" textAlignment="CENTER" textFill="$x2" wrapText="false" />
+                                        <Label alignment="CENTER" font="$x1" layoutX="240.0" layoutY="14.0" style="&#10;" text="Details" textAlignment="CENTER" textFill="$x2" wrapText="false" />
+                              <MenuButton layoutX="240.0" layoutY="125.0" mnemonicParsing="false" text="MenuButton">
+                                <items>
+                                  <MenuItem mnemonicParsing="false" text="Action 1" />
+                                  <MenuItem mnemonicParsing="false" text="Action 2" />
+                                </items>
+                              </MenuButton>
                                     </children>
                                 </AnchorPane>
                             </items>

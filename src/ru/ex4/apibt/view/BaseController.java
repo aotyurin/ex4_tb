@@ -3,9 +3,7 @@ package ru.ex4.apibt.view;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.dto.OpenOrderDto;
 import ru.ex4.apibt.dto.OrderBookDto;
@@ -22,7 +20,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class BaseController {
-    private ObservableList<UserBalanceDto> userBalanceObservableList;
+    private ObservableList<UserBalanceDto> userBalanceMasterObservableList;
+    private ObservableList<UserBalanceDto> userBalanceFilterObservableList;
     private ObservableList<TickerDto> tickerPairObservableList;
     private ObservableList<OrderBookDto.Ask> askOrderBookObservableList;
     private ObservableList<OrderBookDto.Bid> bidOrderBookObservableList;
@@ -113,9 +112,13 @@ public class BaseController {
     @FXML
     private TextField balanceBidTextField;
 
+    @FXML
+    private CheckBox allCurrencyCheckBox;
+
 
     public BaseController() {
-        this.userBalanceObservableList = FXCollections.observableArrayList();
+        this.userBalanceMasterObservableList = FXCollections.observableArrayList();
+        this.userBalanceFilterObservableList = FXCollections.observableArrayList();
         this.tickerPairObservableList = FXCollections.observableArrayList();
         this.askOrderBookObservableList = FXCollections.observableArrayList();
         this.bidOrderBookObservableList = FXCollections.observableArrayList();
@@ -131,16 +134,43 @@ public class BaseController {
     private void initialize() {
         Logs.info("initialize baseView");
 
-        fillBalanceTable();
+        initControls();
+
+        fillBalanceTableObservableList();
+        filterBalanceTable();
         fillBalanceTableColumn();
 
         addListener();
     }
 
-    private void fillBalanceTable() {
+    private void initControls() {
+        this.allCurrencyCheckBox.setSelected(true);
+        this.totalAskTextField.setDisable(true);
+        this.commissionAskTextField.setDisable(true);
+        this.balanceAskTextField.setDisable(true);
+        this.totalBidTextField.setDisable(true);
+        this.commissionBidTextField.setDisable(true);
+        this.balanceBidTextField.setDisable(true);
+    }
+
+    private void fillBalanceTableObservableList() {
         List<UserBalanceDto> balanceDtoList = userInfoService.getBalanceDtoList();
-        this.userBalanceObservableList.addAll(balanceDtoList);
-        this.userBalanceTable.setItems(userBalanceObservableList);
+        this.userBalanceMasterObservableList.addAll(balanceDtoList);
+    }
+
+    private void filterBalanceTable() {
+        this.userBalanceFilterObservableList.clear();
+
+        if (!allCurrencyCheckBox.isSelected()) {
+            userBalanceFilterObservableList.addAll(userBalanceMasterObservableList);
+        } else {
+            userBalanceMasterObservableList.forEach(userBalanceDto -> {
+                if (userBalanceDto.getAmountBalance().compareTo(BigDecimal.ZERO) != 0 || userBalanceDto.getAmountReserved().compareTo(BigDecimal.ZERO) != 0) {
+                    userBalanceFilterObservableList.add(userBalanceDto);
+                }
+            });
+        }
+        this.userBalanceTable.setItems(userBalanceFilterObservableList);
     }
 
     private void fillBalanceTableColumn() {
@@ -150,6 +180,9 @@ public class BaseController {
     }
 
     private void addListener() {
+        this.allCurrencyCheckBox.selectedProperty().addListener((observable1, oldValue1, newValue1) -> {
+            filterBalanceTable();
+        });
         this.userBalanceTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             userBalanceDto = newValue;
 
@@ -286,9 +319,9 @@ public class BaseController {
         BigDecimal quantity = DecimalUtil.parse(this.quantityBidTextField.getText());
         BigDecimal price = DecimalUtil.parse(this.priceBidTextField.getText());
 
-        BigDecimal total = quantity.multiply(price).add(quantity.multiply(price).multiply(BigDecimal.valueOf(IExConst.STOCK_FEE)));
-        BigDecimal commission = quantity.multiply(price).multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
-        BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total);
+        BigDecimal total = quantity.multiply(price);
+        BigDecimal commission = quantity.multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
+        BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total.add(commission));
 
         this.totalBidTextField.setText(DecimalUtil.round(total).toPlainString());
         this.commissionBidTextField.setText(DecimalUtil.round(commission).toPlainString());
@@ -299,9 +332,9 @@ public class BaseController {
         BigDecimal quantity = DecimalUtil.parse(this.quantityAskTextField.getText());
         BigDecimal price = DecimalUtil.parse(this.priceAskTextField.getText());
 
-        BigDecimal total = quantity.multiply(price).add(quantity.multiply(price).multiply(BigDecimal.valueOf(IExConst.STOCK_FEE)));
-        BigDecimal commission = quantity.multiply(price).multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
-        BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total);
+        BigDecimal total = quantity.multiply(price);
+        BigDecimal commission = quantity.multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
+        BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total.add(commission));
 
         this.totalAskTextField.setText(DecimalUtil.round(total).toPlainString());
         this.commissionAskTextField.setText(DecimalUtil.round(commission).toPlainString());
