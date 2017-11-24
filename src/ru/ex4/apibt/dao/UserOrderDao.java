@@ -1,5 +1,6 @@
 package ru.ex4.apibt.dao;
 
+import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
 import ru.ex4.apibt.model.OrderCreate;
@@ -7,6 +8,7 @@ import ru.ex4.apibt.util.DateUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -91,4 +93,7 @@ public class UserOrderDao {
         return null;
     }
 
+//    public void deleteAll() {
+//        jdbcTemplate.executeUpdate("DELETE FROM User_Order;");
+//    }
 }
