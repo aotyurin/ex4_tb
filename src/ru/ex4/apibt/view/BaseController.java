@@ -3,10 +3,10 @@ package ru.ex4.apibt.view;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.dto.OpenOrderDto;
 import ru.ex4.apibt.dto.OrderBookDto;
 import ru.ex4.apibt.dto.TickerDto;
@@ -16,6 +16,7 @@ import ru.ex4.apibt.service.OrderBookService;
 import ru.ex4.apibt.service.OrderService;
 import ru.ex4.apibt.service.TickerService;
 import ru.ex4.apibt.service.UserInfoService;
+import ru.ex4.apibt.util.DecimalUtil;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -91,16 +92,26 @@ public class BaseController {
     private TableColumn<OpenOrderDto, Number> amountOpenOrderTableColumn;
 
     @FXML
-    private Label realLabel;
+    private TextField quantityAskTextField;
     @FXML
-    private TextField amountBidTextField;
+    private TextField priceAskTextField;
+    @FXML
+    private TextField totalAskTextField;
+    @FXML
+    private TextField commissionAskTextField;
+    @FXML
+    private TextField balanceAskTextField;
+
+    @FXML
+    private TextField quantityBidTextField;
     @FXML
     private TextField priceBidTextField;
     @FXML
-    private TextField userBalanceBidTextField;
-
-//    @FXML
-//    private TextField quantityBidTextField;
+    private TextField totalBidTextField;
+    @FXML
+    private TextField commissionBidTextField;
+    @FXML
+    private TextField balanceBidTextField;
 
 
     public BaseController() {
@@ -157,8 +168,29 @@ public class BaseController {
         this.bidOrderBookTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             fillAskTextField(newValue);
         });
-    }
 
+        this.quantityBidTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(oldValue)) {
+                calcBidTextField();
+            }
+        });
+        this.priceBidTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(oldValue)) {
+                calcBidTextField();
+            }
+        });
+        this.quantityAskTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(oldValue)) {
+                calcAskTextField();
+            }
+        });
+        this.priceAskTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(oldValue)) {
+                calcAskTextField();
+            }
+        });
+
+    }
 
     private void fillTickerPairTable(UserBalanceDto userBalanceDto) {
         this.tickerPairObservableList.clear();
@@ -227,23 +259,53 @@ public class BaseController {
     }
 
 
-    private void fillAskTextField(OrderBookDto.Bid value) {
+    private void fillBidTextField(OrderBookDto.Ask value) {
         if (value != null) {
-            this.amountBidTextField.setText(String.valueOf(value.amountProperty().get()));
-            this.priceBidTextField.setText(String.valueOf(value.priceProperty().get()));
-//            this.quantityBidTextField.setText(String.valueOf(value.quantityProperty().get()));
+            this.quantityBidTextField.setText(value.getAmount().toPlainString());
+            this.priceBidTextField.setText(value.getPrice().toPlainString());
+            this.priceAskTextField.setText(value.getPrice().toPlainString());
         } else {
-            this.amountBidTextField.setText("");
+            this.quantityBidTextField.setText("");
             this.priceBidTextField.setText("");
-        }
-
-        if (this.userBalanceDto != null) {
-            this.userBalanceBidTextField.setText(userBalanceDto.amountBalanceProperty().get());
         }
     }
 
-    private void fillBidTextField(OrderBookDto.Ask value) {
+    private void fillAskTextField(OrderBookDto.Bid value) {
+        if (value != null) {
+            this.quantityAskTextField.setText(value.getAmount().toPlainString());
+            this.priceAskTextField.setText(value.getPrice().toPlainString());
+            this.priceBidTextField.setText(value.getPrice().toPlainString());
+        } else {
+            this.quantityAskTextField.setText("");
+            this.priceAskTextField.setText("");
+        }
+    }
 
+
+    private void calcBidTextField() {
+        BigDecimal quantity = DecimalUtil.parse(this.quantityBidTextField.getText());
+        BigDecimal price = DecimalUtil.parse(this.priceBidTextField.getText());
+
+        BigDecimal total = quantity.multiply(price).add(quantity.multiply(price).multiply(BigDecimal.valueOf(IExConst.STOCK_FEE)));
+        BigDecimal commission = quantity.multiply(price).multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
+        BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total);
+
+        this.totalBidTextField.setText(DecimalUtil.round(total).toPlainString());
+        this.commissionBidTextField.setText(DecimalUtil.round(commission).toPlainString());
+        this.balanceBidTextField.setText(DecimalUtil.round(balance).toPlainString());
+    }
+
+    private void calcAskTextField() {
+        BigDecimal quantity = DecimalUtil.parse(this.quantityAskTextField.getText());
+        BigDecimal price = DecimalUtil.parse(this.priceAskTextField.getText());
+
+        BigDecimal total = quantity.multiply(price).add(quantity.multiply(price).multiply(BigDecimal.valueOf(IExConst.STOCK_FEE)));
+        BigDecimal commission = quantity.multiply(price).multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
+        BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total);
+
+        this.totalAskTextField.setText(DecimalUtil.round(total).toPlainString());
+        this.commissionAskTextField.setText(DecimalUtil.round(commission).toPlainString());
+        this.balanceAskTextField.setText(DecimalUtil.round(balance).toPlainString());
     }
 
 
