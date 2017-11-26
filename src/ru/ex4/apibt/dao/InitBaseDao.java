@@ -35,6 +35,9 @@ public class InitBaseDao {
         String sqlCreate__History_Trades = "CREATE TABLE IF NOT EXISTS History_Trades(orderId TEXT, pair TEXT, tradeId TEXT, type TEXT, price REAL, quantity REAL, amount REAL, date TEXT, PRIMARY KEY (orderId, tradeId)   );";
         jdbcTemplate.executeUpdate(sqlCreate__History_Trades);
 
+        String sqlCreate__Stop_Trailing = "CREATE TABLE IF NOT EXISTS Stop_Trailing(pair TEXT, trendType TEXT, price REAL, dateCreated TEXT, dateNotify TEXT, PRIMARY KEY (pair, price) );";
+        jdbcTemplate.executeUpdate(sqlCreate__Stop_Trailing);
+
     }
 
 

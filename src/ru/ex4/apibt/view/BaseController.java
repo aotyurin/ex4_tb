@@ -3,8 +3,14 @@ package ru.ex4.apibt.view;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import ru.ex4.apibt.IExConst;
+import ru.ex4.apibt.Main;
 import ru.ex4.apibt.dto.OpenOrderDto;
 import ru.ex4.apibt.dto.OrderBookDto;
 import ru.ex4.apibt.dto.TickerDto;
@@ -16,6 +22,7 @@ import ru.ex4.apibt.service.TickerService;
 import ru.ex4.apibt.service.UserInfoService;
 import ru.ex4.apibt.util.DecimalUtil;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -142,6 +149,18 @@ public class BaseController {
 
         addListener();
     }
+
+    @FXML
+    private void OnTrailingShow() {
+        UserBalanceDto selectedItem = this.userBalanceTable.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            if (this.tickerPairObservableList.size() > 0) {
+                handleTrailingDialog(tickerPairObservableList);
+            }
+        }
+    }
+
+
 
     private void initControls() {
         this.allCurrencyCheckBox.setSelected(true);
@@ -339,6 +358,30 @@ public class BaseController {
         this.totalAskTextField.setText(DecimalUtil.round(total).toPlainString());
         this.commissionAskTextField.setText(DecimalUtil.round(commission).toPlainString());
         this.balanceAskTextField.setText(DecimalUtil.round(balance).toPlainString());
+    }
+
+
+
+    private void handleTrailingDialog(ObservableList<TickerDto> tickerPairObservableList) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/TrailingView.fxml"));
+
+            Parent parent = (Parent) fxmlLoader.load();
+
+            Stage modalStage = new Stage();
+            modalStage.setTitle("Трейлинг Стоп");
+            modalStage.initModality(Modality.APPLICATION_MODAL);
+            Scene scene = new Scene(parent);
+            modalStage.setScene(scene);
+
+            TrailingViewController trailingViewController = (TrailingViewController) fxmlLoader.getController();
+            trailingViewController.initCtrl(tickerPairObservableList);
+            trailingViewController.setDialogStage(modalStage);
+
+            modalStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
