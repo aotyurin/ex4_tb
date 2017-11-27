@@ -3,10 +3,14 @@ package ru.ex4.apibt.view;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import ru.ex4.apibt.IExConst;
+import ru.ex4.apibt.Main;
 import ru.ex4.apibt.dto.OpenOrderDto;
 import ru.ex4.apibt.dto.OrderBookDto;
 import ru.ex4.apibt.dto.TickerDto;
@@ -16,12 +20,15 @@ import ru.ex4.apibt.service.OrderBookService;
 import ru.ex4.apibt.service.OrderService;
 import ru.ex4.apibt.service.TickerService;
 import ru.ex4.apibt.service.UserInfoService;
+import ru.ex4.apibt.util.DecimalUtil;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
 public class BaseController {
-    private ObservableList<UserBalanceDto> userBalanceObservableList;
+    private ObservableList<UserBalanceDto> userBalanceMasterObservableList;
+    private ObservableList<UserBalanceDto> userBalanceFilterObservableList;
     private ObservableList<TickerDto> tickerPairObservableList;
     private ObservableList<OrderBookDto.Ask> askOrderBookObservableList;
     private ObservableList<OrderBookDto.Bid> bidOrderBookObservableList;
@@ -91,20 +98,34 @@ public class BaseController {
     private TableColumn<OpenOrderDto, Number> amountOpenOrderTableColumn;
 
     @FXML
-    private Label realLabel;
+    private TextField quantityAskTextField;
     @FXML
-    private TextField amountBidTextField;
+    private TextField priceAskTextField;
+    @FXML
+    private TextField totalAskTextField;
+    @FXML
+    private TextField commissionAskTextField;
+    @FXML
+    private TextField balanceAskTextField;
+
+    @FXML
+    private TextField quantityBidTextField;
     @FXML
     private TextField priceBidTextField;
     @FXML
-    private TextField userBalanceBidTextField;
+    private TextField totalBidTextField;
+    @FXML
+    private TextField commissionBidTextField;
+    @FXML
+    private TextField balanceBidTextField;
 
-//    @FXML
-//    private TextField quantityBidTextField;
+    @FXML
+    private CheckBox allCurrencyCheckBox;
 
 
     public BaseController() {
-        this.userBalanceObservableList = FXCollections.observableArrayList();
+        this.userBalanceMasterObservableList = FXCollections.observableArrayList();
+        this.userBalanceFilterObservableList = FXCollections.observableArrayList();
         this.tickerPairObservableList = FXCollections.observableArrayList();
         this.askOrderBookObservableList = FXCollections.observableArrayList();
         this.bidOrderBookObservableList = FXCollections.observableArrayList();
@@ -120,16 +141,55 @@ public class BaseController {
     private void initialize() {
         Logs.info("initialize baseView");
 
-        fillBalanceTable();
+        initControls();
+
+        fillBalanceTableObservableList();
+        filterBalanceTable();
         fillBalanceTableColumn();
 
         addListener();
     }
 
-    private void fillBalanceTable() {
+    @FXML
+    private void OnTrailingShow() {
+        UserBalanceDto selectedItem = this.userBalanceTable.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            if (this.tickerPairObservableList.size() > 0) {
+                handleTrailingDialog(tickerPairObservableList);
+            }
+        }
+    }
+
+
+
+    private void initControls() {
+        this.allCurrencyCheckBox.setSelected(true);
+        this.totalAskTextField.setDisable(true);
+        this.commissionAskTextField.setDisable(true);
+        this.balanceAskTextField.setDisable(true);
+        this.totalBidTextField.setDisable(true);
+        this.commissionBidTextField.setDisable(true);
+        this.balanceBidTextField.setDisable(true);
+    }
+
+    private void fillBalanceTableObservableList() {
         List<UserBalanceDto> balanceDtoList = userInfoService.getBalanceDtoList();
-        this.userBalanceObservableList.addAll(balanceDtoList);
-        this.userBalanceTable.setItems(userBalanceObservableList);
+        this.userBalanceMasterObservableList.addAll(balanceDtoList);
+    }
+
+    private void filterBalanceTable() {
+        this.userBalanceFilterObservableList.clear();
+
+        if (!allCurrencyCheckBox.isSelected()) {
+            userBalanceFilterObservableList.addAll(userBalanceMasterObservableList);
+        } else {
+            userBalanceMasterObservableList.forEach(userBalanceDto -> {
+                if (userBalanceDto.getAmountBalance().compareTo(BigDecimal.ZERO) != 0 || userBalanceDto.getAmountReserved().compareTo(BigDecimal.ZERO) != 0) {
+                    userBalanceFilterObservableList.add(userBalanceDto);
+                }
+            });
+        }
+        this.userBalanceTable.setItems(userBalanceFilterObservableList);
     }
 
     private void fillBalanceTableColumn() {
@@ -139,6 +199,9 @@ public class BaseController {
     }
 
     private void addListener() {
+        this.allCurrencyCheckBox.selectedProperty().addListener((observable1, oldValue1, newValue1) -> {
+            filterBalanceTable();
+        });
         this.userBalanceTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             userBalanceDto = newValue;
 
@@ -157,8 +220,29 @@ public class BaseController {
         this.bidOrderBookTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             fillAskTextField(newValue);
         });
-    }
 
+        this.quantityBidTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(oldValue)) {
+                calcBidTextField();
+            }
+        });
+        this.priceBidTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(oldValue)) {
+                calcBidTextField();
+            }
+        });
+        this.quantityAskTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(oldValue)) {
+                calcAskTextField();
+            }
+        });
+        this.priceAskTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(oldValue)) {
+                calcAskTextField();
+            }
+        });
+
+    }
 
     private void fillTickerPairTable(UserBalanceDto userBalanceDto) {
         this.tickerPairObservableList.clear();
@@ -227,23 +311,77 @@ public class BaseController {
     }
 
 
-    private void fillAskTextField(OrderBookDto.Bid value) {
+    private void fillBidTextField(OrderBookDto.Ask value) {
         if (value != null) {
-            this.amountBidTextField.setText(String.valueOf(value.amountProperty().get()));
-            this.priceBidTextField.setText(String.valueOf(value.priceProperty().get()));
-//            this.quantityBidTextField.setText(String.valueOf(value.quantityProperty().get()));
+            this.quantityBidTextField.setText(value.getAmount().toPlainString());
+            this.priceBidTextField.setText(value.getPrice().toPlainString());
+            this.priceAskTextField.setText(value.getPrice().toPlainString());
         } else {
-            this.amountBidTextField.setText("");
+            this.quantityBidTextField.setText("");
             this.priceBidTextField.setText("");
-        }
-
-        if (this.userBalanceDto != null) {
-            this.userBalanceBidTextField.setText(userBalanceDto.amountBalanceProperty().get());
         }
     }
 
-    private void fillBidTextField(OrderBookDto.Ask value) {
+    private void fillAskTextField(OrderBookDto.Bid value) {
+        if (value != null) {
+            this.quantityAskTextField.setText(value.getAmount().toPlainString());
+            this.priceAskTextField.setText(value.getPrice().toPlainString());
+            this.priceBidTextField.setText(value.getPrice().toPlainString());
+        } else {
+            this.quantityAskTextField.setText("");
+            this.priceAskTextField.setText("");
+        }
+    }
 
+
+    private void calcBidTextField() {
+        BigDecimal quantity = DecimalUtil.parse(this.quantityBidTextField.getText());
+        BigDecimal price = DecimalUtil.parse(this.priceBidTextField.getText());
+
+        BigDecimal total = quantity.multiply(price);
+        BigDecimal commission = quantity.multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
+        BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total.add(commission));
+
+        this.totalBidTextField.setText(DecimalUtil.round(total).toPlainString());
+        this.commissionBidTextField.setText(DecimalUtil.round(commission).toPlainString());
+        this.balanceBidTextField.setText(DecimalUtil.round(balance).toPlainString());
+    }
+
+    private void calcAskTextField() {
+        BigDecimal quantity = DecimalUtil.parse(this.quantityAskTextField.getText());
+        BigDecimal price = DecimalUtil.parse(this.priceAskTextField.getText());
+
+        BigDecimal total = quantity.multiply(price);
+        BigDecimal commission = quantity.multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
+        BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total.add(commission));
+
+        this.totalAskTextField.setText(DecimalUtil.round(total).toPlainString());
+        this.commissionAskTextField.setText(DecimalUtil.round(commission).toPlainString());
+        this.balanceAskTextField.setText(DecimalUtil.round(balance).toPlainString());
+    }
+
+
+
+    private void handleTrailingDialog(ObservableList<TickerDto> tickerPairObservableList) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/TrailingView.fxml"));
+
+            Parent parent = (Parent) fxmlLoader.load();
+
+            Stage modalStage = new Stage();
+            modalStage.setTitle("Трейлинг Стоп");
+            modalStage.initModality(Modality.APPLICATION_MODAL);
+            Scene scene = new Scene(parent);
+            modalStage.setScene(scene);
+
+            TrailingViewController trailingViewController = (TrailingViewController) fxmlLoader.getController();
+            trailingViewController.initCtrl(tickerPairObservableList);
+            trailingViewController.setDialogStage(modalStage);
+
+            modalStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

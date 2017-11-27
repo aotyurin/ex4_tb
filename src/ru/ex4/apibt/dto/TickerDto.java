@@ -67,4 +67,20 @@ public class TickerDto {
     public StringProperty volumeProperty() {
         return new SimpleStringProperty(vol + "(" + volCurr + ")");
     }
+
+    public FloatProperty highTradeProperty() {
+        return new SimpleFloatProperty(high);
+    }
+
+    public FloatProperty lastTradeProperty() {
+        return new SimpleFloatProperty(lastTrade.floatValue());
+    }
+
+    public FloatProperty lowTradeProperty() {
+        return new SimpleFloatProperty(low);
+    }
+
+    public FloatProperty avgTradeProperty() {
+        return new SimpleFloatProperty(avg);
+    }
 }

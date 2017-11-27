@@ -2,6 +2,7 @@ package ru.ex4.apibt.dto;
 
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
+import ru.ex4.apibt.util.DecimalUtil;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -48,7 +49,6 @@ public class OrderBookDto {
     }
 
 
-
     private class OrderBookValue {
         //  Цена
         private BigDecimal price;
@@ -63,17 +63,31 @@ public class OrderBookDto {
             this.amount = amount;
         }
 
+        public BigDecimal getPrice() {
+            return DecimalUtil.round(price);
+        }
+
+        public BigDecimal getQuantity() {
+            return DecimalUtil.round(quantity);
+        }
+
+        public BigDecimal getAmount() {
+            return DecimalUtil.round(amount);
+        }
+
         public FloatProperty priceProperty() {
-            return new SimpleFloatProperty(price.floatValue());
+            return new SimpleFloatProperty(getPrice().floatValue());
         }
 
         public FloatProperty quantityProperty() {
-            return new SimpleFloatProperty(quantity.floatValue());
+            return new SimpleFloatProperty(getQuantity().floatValue());
         }
 
         public FloatProperty amountProperty() {
-            return new SimpleFloatProperty(amount.floatValue());
+            return new SimpleFloatProperty(getAmount().floatValue());
         }
+
+
     }
 
 
