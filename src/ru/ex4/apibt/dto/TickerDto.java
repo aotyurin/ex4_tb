@@ -42,6 +42,10 @@ public class TickerDto {
         return new SimpleStringProperty(pair);
     }
 
+    public String getPair() {
+        return pair;
+    }
+
     public FloatProperty buyPriceProperty() {
         return new SimpleFloatProperty(buyPrice.floatValue());
     }

@@ -3,9 +3,15 @@ package ru.ex4.apibt.view;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ru.ex4.apibt.Main;
 import ru.ex4.apibt.dto.TickerDto;
 import ru.ex4.apibt.dto.TrailingDto;
 import ru.ex4.apibt.service.TrailingService;
@@ -60,6 +66,22 @@ public class TrailingViewController {
     private void initialize() {
     }
 
+    @FXML
+    private void OnAddTrailingDialogShow() {
+        TickerDto selectedItem = this.tickerPairTable.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            handleTrailingDialog(selectedItem.getPair(), null);
+        }
+    }
+
+    @FXML
+    private void OnEditTrailingDialogShow() {
+        TrailingDto selectedItem = this.trailingTable.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            handleTrailingDialog(selectedItem.getPair(), selectedItem);
+        }
+    }
+
     public void initCtrl(ObservableList<TickerDto> tickerPairObservableList) throws IOException {
         if (tickerPairObservableList == null) {
             throw new IOException("error initialize controller");
@@ -67,10 +89,10 @@ public class TrailingViewController {
         fillTickerPairTable(tickerPairObservableList);
         fillTickerPairTableColumn();
 
+        addListener();
+
         fillStopSignalTable();
         fillStopSignalTableColumn();
-
-//        addListener();
     }
 
     private void fillTickerPairTable(ObservableList<TickerDto> tickerPairObservableList) {
@@ -85,12 +107,26 @@ public class TrailingViewController {
         this.avgTradeTickerPairTableColumn.setCellValueFactory(param -> param.getValue().avgTradeProperty());
     }
 
-//    private void addListener() {
-//        this.tickerPairTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-//            fillStopSignalTable(newValue);
-//            fillStopSignalTableColumn();
-//        });
-//    }
+    private void addListener() {
+        this.tickerPairTable.setRowFactory(param -> {
+            TableRow<TickerDto> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    OnAddTrailingDialogShow();
+                }
+            });
+            return row;
+        });
+        this.trailingTable.setRowFactory(param -> {
+            TableRow<TrailingDto> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    OnEditTrailingDialogShow();
+                }
+            });
+            return row;
+        });
+    }
 
     private void fillStopSignalTable() {
         List<TrailingDto> trailingDtoList = trailingService.getTrailingDtoList();
@@ -106,5 +142,34 @@ public class TrailingViewController {
         this.dateNotifyTrailingTableColumn.setCellValueFactory(param -> param.getValue().dateNotifyProperty());
     }
 
+    private void handleTrailingDialog(String pair, TrailingDto trailingDto) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/TrailingEditDialog.fxml"));
+
+            Parent parent = (Parent) fxmlLoader.load();
+
+            Stage modalStage = new Stage();
+            modalStage.setTitle("stop..tr..");
+            modalStage.initModality(Modality.APPLICATION_MODAL);
+            Scene scene = new Scene(parent);
+            modalStage.setScene(scene);
+
+            TrailingEditDialogController trailingViewController = (TrailingEditDialogController) fxmlLoader.getController();
+            trailingViewController.initCtrl(pair, trailingDto);
+            trailingViewController.setDialogStage(modalStage);
+
+            modalStage.showAndWait();
+
+            TrailingDto result = trailingViewController.getResult();
+            if (result != null) {
+                trailingService.save(result);
+
+                this.trailingTable.getItems().add(result);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
