@@ -23,4 +23,8 @@ public class TrailingService {
 
         return trailingDtoList;
     }
+
+    public void save(TrailingDto trailingDto) {
+        trailingDao.save(new Trailing(trailingDto.getPair(), trailingDto.getTrendType(), trailingDto.getPrice()));
+    }
 }

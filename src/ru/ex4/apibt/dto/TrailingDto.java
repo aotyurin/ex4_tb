@@ -25,6 +25,17 @@ public class TrailingDto {
         this.dateNotify = dateNotify;
     }
 
+    public String getPair() {
+        return pair;
+    }
+
+    public TrendType getTrendType() {
+        return trendType;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
 
     public StringProperty pairProperty() {
         return new SimpleStringProperty(pair);
