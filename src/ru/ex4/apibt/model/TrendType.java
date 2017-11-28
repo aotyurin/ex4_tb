@@ -7,11 +7,14 @@ import java.util.List;
 public enum TrendType {
     upward,     //восходящий, больше чем
     downward,   //нисходящий, меньше чем
-    flat        //боковой   , равно или примерно равно
-    ;
+    flat;        //боковой   , равно или примерно равно
+
 
 
     public static List<TrendType> getList() {
-        return new ArrayList<>(Arrays.asList(TrendType.values()));
+        ArrayList<TrendType> trendTypes = new ArrayList<>();
+        trendTypes.add(upward);
+        trendTypes.add(downward);
+        return trendTypes;
     }
 }

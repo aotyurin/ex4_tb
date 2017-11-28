@@ -8,7 +8,7 @@ import ru.ex4.apibt.model.UserOpenOrder;
 import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.service.InitBaseService;
 import ru.ex4.apibt.service.OrderService;
-import ru.ex4.apibt.service.TickerService;
+import ru.ex4.apibt.service.TickerOldService;
 import ru.ex4.apibt.service.UserInfoService;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class OpenOrder {
             for (UserOpenOrder.UserOpenOrderValue userOpenOrderValue : userOpenOrderValueList) {
                 Logs.info(String.format(" - имеется открытый ордер. %1$s", userOpenOrderValue));
 
-                Ticker tickerByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+                Ticker tickerByPair = TickerOldService.getTickerDtoByPair(IExConst.PAIR);
                 if (tickerByPair != null) {
                     // отклонение цены от текущей в процентах
                     float sellPrice1 = tickerByPair.getSellPrice().floatValue();
@@ -57,7 +57,7 @@ public class OpenOrder {
                             float sellPrice = tickerByPair.getSellPrice().floatValue();
                             if (lastPriceByOrder > 0 && sellPrice > lastPriceByOrder) {
                                 if (Wait.upwardTrend(null)) {
-                                    tickerByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+                                    tickerByPair = TickerOldService.getTickerDtoByPair(IExConst.PAIR);
                                     if (tickerByPair != null) {
                                         sellPrice = tickerByPair.getSellPrice().floatValue();
                                         float deviationPrice2 = (userOpenOrderValue.getPrice().floatValue() - sellPrice) / sellPrice * 100;

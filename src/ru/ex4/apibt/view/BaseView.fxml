@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
+
 <VBox prefHeight="729.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.ex4.apibt.view.BaseViewController">
     <children>
         <SplitPane dividerPositions="0.41543026706231456, 0.7655786350148368" orientation="VERTICAL">
@@ -30,7 +35,13 @@
                            <contextMenu>
                               <ContextMenu>
                                 <items>
-                                  <MenuItem mnemonicParsing="false" onAction="#OnTrailingShow" text="Трейлинг" />
+                                    <Menu mnemonicParsing="false" text="trailing">
+                                      <items>
+                                        <MenuItem mnemonicParsing="false" onAction="#OnTrailingShow" text="open" />
+                                          <MenuItem mnemonicParsing="false" onAction="#OnTrailingStart" text="start" />
+                                          <MenuItem mnemonicParsing="false" onAction="#OnTrailingStop" text="stop" />
+                                      </items>
+                                    </Menu>
                                 </items>
                               </ContextMenu>
                            </contextMenu>

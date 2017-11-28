@@ -16,10 +16,8 @@ import ru.ex4.apibt.dto.OrderBookDto;
 import ru.ex4.apibt.dto.TickerDto;
 import ru.ex4.apibt.dto.UserBalanceDto;
 import ru.ex4.apibt.log.Logs;
-import ru.ex4.apibt.service.OrderBookService;
-import ru.ex4.apibt.service.OrderService;
-import ru.ex4.apibt.service.TickerService;
-import ru.ex4.apibt.service.UserInfoService;
+import ru.ex4.apibt.logic.TrailingProcess;
+import ru.ex4.apibt.service.*;
 import ru.ex4.apibt.util.DecimalUtil;
 
 import java.io.IOException;
@@ -35,11 +33,13 @@ public class BaseViewController {
     private ObservableList<OpenOrderDto> openOrderObservableList;
 
     private UserInfoService userInfoService;
-    //    private TickerService tickerService;
+    private TickerService tickerService;
     private OrderBookService orderBookService;
     private OrderService orderService;
 
     private UserBalanceDto userBalanceDto;
+    private TrailingProcess trailingProcess;
+
 
     @FXML
     private TableView<UserBalanceDto> userBalanceTable;
@@ -132,9 +132,11 @@ public class BaseViewController {
         this.openOrderObservableList = FXCollections.observableArrayList();
 
         this.userInfoService = new UserInfoService();
-//        this.tickerService = new TickerService();
+        this.tickerService = new TickerService();
         this.orderBookService = new OrderBookService();
         this.orderService = new OrderService();
+
+        trailingProcess = new TrailingProcess();
     }
 
     @FXML
@@ -160,7 +162,17 @@ public class BaseViewController {
         }
     }
 
+    @FXML
+    private void OnTrailingStart() {
+        // todo n't correct start thread
 
+        trailingProcess.start();
+    }
+
+    @FXML
+    private void OnTrailingStop() {
+//        trailingProcess.interrupt();
+    }
 
     private void initControls() {
         this.allCurrencyCheckBox.setSelected(true);
@@ -248,7 +260,7 @@ public class BaseViewController {
         this.tickerPairObservableList.clear();
 
         if (userBalanceDto != null) {
-            List<TickerDto> tickerDtoList = TickerService.getTickerDtoListByCurrency(userBalanceDto.currencyProperty().get());
+            List<TickerDto> tickerDtoList = tickerService.getTickerListByCurrency(userBalanceDto.currencyProperty().get());
             this.tickerPairObservableList.addAll(tickerDtoList);
             this.tickerPairTable.setItems(tickerPairObservableList);
         }
@@ -359,7 +371,6 @@ public class BaseViewController {
         this.commissionAskTextField.setText(DecimalUtil.round(commission).toPlainString());
         this.balanceAskTextField.setText(DecimalUtil.round(balance).toPlainString());
     }
-
 
 
     private void handleTrailingDialog(ObservableList<TickerDto> tickerPairObservableList) {
