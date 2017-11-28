@@ -42,7 +42,7 @@ public class TrailingDao {
                         TrendType.valueOf(resultSet.getString("trendType")),
                         resultSet.getBigDecimal("price"),
                         DateUtil.parse(resultSet.getString("dateCreated")),
-                        DateUtil.parse(resultSet.getString("dateNotify")) ));
+                        DateUtil.parse(resultSet.getString("dateNotify"))));
             }
         } catch (SQLException | ParseException e) {
             e.printStackTrace();
@@ -61,6 +61,16 @@ public class TrailingDao {
         prs.setValues("price", trailing.getPrice());
         prs.setValues("dateCreated", DateUtil.format(trailing.getDateCreated()));
         prs.setValues("dateNotify", DateUtil.format(trailing.getDateNotify()));
+
+        jdbcTemplate.executeUpdate(sql, prs);
+    }
+
+    public void delete(Trailing trailing) {
+        String sql = "DELETE FROM Stop_Trailing WHERE pair=:pair AND dateCreated=:dateCreated ;";
+
+        PreparedParamsSetter prs = new PreparedParamsSetter();
+        prs.setValues("pair", trailing.getPair());
+        prs.setValues("dateCreated", DateUtil.format(trailing.getDateCreated()));
 
         jdbcTemplate.executeUpdate(sql, prs);
     }

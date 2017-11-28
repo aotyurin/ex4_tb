@@ -12,6 +12,7 @@ import ru.ex4.apibt.util.DecimalUtil;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 
 public class TrailingEditDialogController {
@@ -88,7 +89,7 @@ public class TrailingEditDialogController {
         } else {
             this.pairTrailingLabel.setText(pair);
             this.priceTrailingTextField.setText("");
-            this.dateCreatedTrailingLabel.setText("");
+            this.dateCreatedTrailingLabel.setText(DateUtil.format(new Date()));
             this.dateNotifyTrailingLabel.setText("");
         }
     }
@@ -100,7 +101,7 @@ public class TrailingEditDialogController {
             if (text.equals("")) {
                 msg.append("поле 'price' не заполнено! \n");
             }
-            int i = Integer.parseInt(text);
+            BigDecimal i = new BigDecimal(text);
         } catch (NumberFormatException ignore) {
             msg.append("в поле 'price' значение ").append(text).append(" не является числом! \n");
         }

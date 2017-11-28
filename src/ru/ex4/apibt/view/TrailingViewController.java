@@ -82,6 +82,28 @@ public class TrailingViewController {
         }
     }
 
+    @FXML
+    private void OnDeleteTrailing() {
+        TrailingDto selectedItem = this.trailingTable.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            trailingService.delete(selectedItem);
+
+            this.trailingTable.getItems().remove(selectedItem);
+        }
+    }
+
+    @FXML
+    private void btnOk() {
+        // start thread
+
+        dialogStage.close();
+    }
+
+    @FXML
+    private void btnCancel() {
+        dialogStage.close();
+    }
+
     public void initCtrl(ObservableList<TickerDto> tickerPairObservableList) throws IOException {
         if (tickerPairObservableList == null) {
             throw new IOException("error initialize controller");
@@ -129,6 +151,7 @@ public class TrailingViewController {
     }
 
     private void fillStopSignalTable() {
+        this.trailingObservableList.clear();
         List<TrailingDto> trailingDtoList = trailingService.getTrailingDtoList();
         this.trailingObservableList.addAll(trailingDtoList);
         this.trailingTable.setItems(trailingObservableList);
@@ -164,7 +187,7 @@ public class TrailingViewController {
             if (result != null) {
                 trailingService.save(result);
 
-                this.trailingTable.getItems().add(result);
+                fillStopSignalTable();
             }
 
         } catch (IOException e) {

@@ -13,14 +13,6 @@ public class Trailing {
     private Date dateNotify;
 
 
-    public Trailing(String pair, TrendType trendType, BigDecimal price) {
-        this.pair = pair;
-        this.trendType = trendType;
-        this.price = price;
-        this.dateCreated = new Date();
-        this.dateNotify = null;
-    }
-
     public Trailing(String pair, TrendType trendType, BigDecimal price, Date dateCreated, Date dateNotify) {
         this.pair = pair;
         this.trendType = trendType;
