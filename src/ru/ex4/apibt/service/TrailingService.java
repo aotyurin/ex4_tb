@@ -25,6 +25,10 @@ public class TrailingService {
     }
 
     public void save(TrailingDto trailingDto) {
-        trailingDao.save(new Trailing(trailingDto.getPair(), trailingDto.getTrendType(), trailingDto.getPrice()));
+        trailingDao.save(new Trailing(trailingDto.getPair(), trailingDto.getTrendType(), trailingDto.getPrice(), trailingDto.getDateCreated(), trailingDto.getDateNotify()));
+    }
+
+    public void delete(TrailingDto trailingDto) {
+        trailingDao.delete(new Trailing(trailingDto.getPair(), trailingDto.getTrendType(), trailingDto.getPrice(), trailingDto.getDateCreated(), trailingDto.getDateNotify()));
     }
 }

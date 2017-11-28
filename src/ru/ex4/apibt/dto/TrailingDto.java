@@ -37,6 +37,14 @@ public class TrailingDto {
         return price;
     }
 
+    public Date getDateCreated() {
+        return dateCreated;
+    }
+
+    public Date getDateNotify() {
+        return dateNotify;
+    }
+
     public StringProperty pairProperty() {
         return new SimpleStringProperty(pair);
     }
