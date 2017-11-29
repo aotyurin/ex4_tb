@@ -51,10 +51,10 @@ public class TrailingProcess extends Thread {
     }
 
     private void doWork(TrailingDto trailingDto, TickerDto tickerDto) {
-         //todo telegram api, send to bot
+        //todo telegram api, send to bot
         System.out.println(" --SEND!!! value " + trailingDto.getPrice() + " is reached. Пара " + trailingDto.getPair() + " Цена " + tickerDto.getSellPrice());
-        
-		trailingDto.setDateNotify(new Date());
+
+        trailingDto.setDateNotify(new Date());
         trailingService.save(trailingDto);
     }
 

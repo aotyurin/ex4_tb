@@ -38,7 +38,7 @@
                                     <Menu mnemonicParsing="false" text="trailing">
                                       <items>
                                         <MenuItem mnemonicParsing="false" onAction="#OnTrailingShow" text="open" />
-                                          <MenuItem mnemonicParsing="false" fx:id="trailingStartMenuItem" onAction="#OnTrailingStart" text="start" />
+                                          <MenuItem fx:id="trailingStartMenuItem" mnemonicParsing="false" onAction="#OnTrailingStart" text="start" />
                                           <MenuItem mnemonicParsing="false" onAction="#OnTrailingStop" text="stop" />
                                       </items>
                                     </Menu>
