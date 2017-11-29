@@ -122,6 +122,9 @@ public class BaseViewController {
     @FXML
     private CheckBox allCurrencyCheckBox;
 
+    @FXML
+    private MenuItem trailingStartMenuItem;
+
 
     public BaseViewController() {
         this.userBalanceMasterObservableList = FXCollections.observableArrayList();
@@ -135,8 +138,6 @@ public class BaseViewController {
         this.tickerService = new TickerService();
         this.orderBookService = new OrderBookService();
         this.orderService = new OrderService();
-
-        trailingProcess = new TrailingProcess();
     }
 
     @FXML
@@ -164,14 +165,22 @@ public class BaseViewController {
 
     @FXML
     private void OnTrailingStart() {
-        // todo n't correct start thread
-
+        if (trailingProcess != null) {
+            trailingProcess.interrupt();
+        }
+        trailingProcess = new TrailingProcess();
         trailingProcess.start();
+
+        this.trailingStartMenuItem.setText("running");
     }
 
     @FXML
     private void OnTrailingStop() {
-//        trailingProcess.interrupt();
+        if (trailingProcess != null) {
+            trailingProcess.interrupt();
+
+            this.trailingStartMenuItem.setText("start");
+        }
     }
 
     private void initControls() {
@@ -182,6 +191,7 @@ public class BaseViewController {
         this.totalBidTextField.setDisable(true);
         this.commissionBidTextField.setDisable(true);
         this.balanceBidTextField.setDisable(true);
+        this.trailingStartMenuItem.setText("start");
     }
 
     private void fillBalanceTableObservableList() {
@@ -380,7 +390,7 @@ public class BaseViewController {
             Parent parent = (Parent) fxmlLoader.load();
 
             Stage modalStage = new Stage();
-            modalStage.setTitle("Трейлинг Стоп");
+            modalStage.setTitle("Trailing Stop");
             modalStage.initModality(Modality.APPLICATION_MODAL);
             Scene scene = new Scene(parent);
             modalStage.setScene(scene);

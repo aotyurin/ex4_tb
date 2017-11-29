@@ -18,20 +18,19 @@ public class TrailingProcess extends Thread {
         this.tickerService = new TickerService();
     }
 
+
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
-            System.out.println("start thread ");
+        while (!Thread.interrupted()) {
+            System.out.println("start thread, while ...");
 
             List<TrailingDto> trailingDtoList = trailingService.getTrailingDtoList();
             if (trailingDtoList.size()==0) {
-                System.out.println("stop ...");
-                Thread.currentThread().interrupt();
-
+                System.out.println("stop thread, trailing list is empty...");
+                currentThread().interrupt();
             }
 
             List<TickerDto> tickerDtoList = tickerService.getTickerList();
-
             trailingDtoList.forEach(trailingDto -> tickerDtoList.forEach(tickerDto -> {
                 if (trailingDto.getPair().equals(tickerDto.getPair())) {
                     if (trailingDto.getTrendType() == TrendType.upward) {
@@ -52,8 +51,10 @@ public class TrailingProcess extends Thread {
     }
 
     private void doWork(TrailingDto trailingDto, TickerDto tickerDto) {
+         //todo telegram api, send to bot
         System.out.println(" --SEND!!! value " + trailingDto.getPrice() + " is reached. Пара " + trailingDto.getPair() + " Цена " + tickerDto.getSellPrice());
-        trailingDto.setDateNotify(new Date());
+        
+		trailingDto.setDateNotify(new Date());
         trailingService.save(trailingDto);
     }
 
