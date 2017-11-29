@@ -26,7 +26,7 @@ public class TrendService {
         double pauseMin = (double) IExConst.LAST_TRADE_PERIOD / iter;
 
         for (int i = 0; i < iter; i++) {
-            Ticker ticker = TickerService.getTickerDtoByPair(pair);
+            Ticker ticker = TickerOldService.getTickerDtoByPair(pair);
             if (ticker != null) {
                 Logs.info("собираем последнии уник. продажи по lastTrade - " + ticker);
 

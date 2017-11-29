@@ -17,7 +17,7 @@ public class Currency {
     public static boolean checkQuotedAndBuy() throws IOException {
         Logs.info(String.format("Проверяем котируемую валюту %1$s и покупаем ...", IExConst.CURRENCY_QUOTED));
         PairSetting pairSettingByPair = PairSettingsService.getPairSettingByPair(IExConst.PAIR);
-        Ticker tickerByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+        Ticker tickerByPair = TickerOldService.getTickerDtoByPair(IExConst.PAIR);
         if (tickerByPair != null && pairSettingByPair != null) {
             float balances_quoted = UserInfoService.getBalanceByCurrency(IExConst.CURRENCY_QUOTED);
             float minBalances = tickerByPair.getBuyPrice().floatValue() * pairSettingByPair.getMinQuantity() + (tickerByPair.getBuyPrice().floatValue() * pairSettingByPair.getMinQuantity()) * IExConst.STOCK_FEE;
@@ -57,14 +57,14 @@ public class Currency {
     private static void buyBase(float balances) throws IOException {
         float profit = 0;
         if (Wait.downwardTrend(null)) {
-            Ticker tickerByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+            Ticker tickerByPair = TickerOldService.getTickerDtoByPair(IExConst.PAIR);
             if (tickerByPair != null) {
                 float buyPrice = tickerByPair.getBuyPrice().floatValue();
                 profit = buyPrice - buyPrice * IExConst.STOCK_FEE - buyPrice * IExConst.PROFIT_MARKUP / 5;
             }
         }
 
-        Ticker tickerByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+        Ticker tickerByPair = TickerOldService.getTickerDtoByPair(IExConst.PAIR);
         if (tickerByPair != null) {
             float buyPrice = tickerByPair.getBuyPrice().floatValue();
             float price = (profit != 0) ? profit : buyPrice;
@@ -82,7 +82,7 @@ public class Currency {
     }
 
     private static void sellBase(float quantity) throws IOException {
-        Ticker tickerByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+        Ticker tickerByPair = TickerOldService.getTickerDtoByPair(IExConst.PAIR);
         if (tickerByPair != null) {
             float historyPrice = getHistoryPrice();
             float sellPrice = tickerByPair.getSellPrice().floatValue();
@@ -92,7 +92,7 @@ public class Currency {
             }
 
             if (Wait.upwardTrend(null)) {
-                tickerByPair = TickerService.getTickerDtoByPair(IExConst.PAIR);
+                tickerByPair = TickerOldService.getTickerDtoByPair(IExConst.PAIR);
                 if (tickerByPair != null) {
                     sellPrice = tickerByPair.getSellPrice().floatValue();
                     float price = sellPrice + sellPrice * IExConst.STOCK_FEE + sellPrice * IExConst.PROFIT_MARKUP;

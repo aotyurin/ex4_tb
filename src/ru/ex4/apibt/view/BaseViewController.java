@@ -2,6 +2,7 @@ package ru.ex4.apibt.view;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -16,10 +17,8 @@ import ru.ex4.apibt.dto.OrderBookDto;
 import ru.ex4.apibt.dto.TickerDto;
 import ru.ex4.apibt.dto.UserBalanceDto;
 import ru.ex4.apibt.log.Logs;
-import ru.ex4.apibt.service.OrderBookService;
-import ru.ex4.apibt.service.OrderService;
-import ru.ex4.apibt.service.TickerService;
-import ru.ex4.apibt.service.UserInfoService;
+import ru.ex4.apibt.logic.TrailingProcess;
+import ru.ex4.apibt.service.*;
 import ru.ex4.apibt.util.DecimalUtil;
 
 import java.io.IOException;
@@ -35,11 +34,13 @@ public class BaseViewController {
     private ObservableList<OpenOrderDto> openOrderObservableList;
 
     private UserInfoService userInfoService;
-    //    private TickerService tickerService;
+    private TickerService tickerService;
     private OrderBookService orderBookService;
     private OrderService orderService;
 
     private UserBalanceDto userBalanceDto;
+    private TrailingProcess trailingProcess;
+
 
     @FXML
     private TableView<UserBalanceDto> userBalanceTable;
@@ -122,6 +123,9 @@ public class BaseViewController {
     @FXML
     private CheckBox allCurrencyCheckBox;
 
+    @FXML
+    private MenuItem trailingStartMenuItem;
+
 
     public BaseViewController() {
         this.userBalanceMasterObservableList = FXCollections.observableArrayList();
@@ -132,7 +136,7 @@ public class BaseViewController {
         this.openOrderObservableList = FXCollections.observableArrayList();
 
         this.userInfoService = new UserInfoService();
-//        this.tickerService = new TickerService();
+        this.tickerService = new TickerService();
         this.orderBookService = new OrderBookService();
         this.orderService = new OrderService();
     }
@@ -160,16 +164,35 @@ public class BaseViewController {
         }
     }
 
+    @FXML
+    private void OnTrailingStart() {
+        if (trailingProcess != null) {
+            trailingProcess.interrupt();
+        }
+        trailingProcess = new TrailingProcess();
+        trailingProcess.start();
 
+        this.trailingStartMenuItem.setText("running");
+    }
+
+    @FXML
+    private void OnTrailingStop() {
+        if (trailingProcess != null) {
+            trailingProcess.interrupt();
+
+            this.trailingStartMenuItem.setText("start");
+        }
+    }
 
     private void initControls() {
         this.allCurrencyCheckBox.setSelected(true);
-        this.totalAskTextField.setDisable(true);
-        this.commissionAskTextField.setDisable(true);
-        this.balanceAskTextField.setDisable(true);
-        this.totalBidTextField.setDisable(true);
-        this.commissionBidTextField.setDisable(true);
-        this.balanceBidTextField.setDisable(true);
+        this.totalAskTextField.setEditable(false);
+        this.commissionAskTextField.setEditable(false);
+        this.balanceAskTextField.setEditable(false);
+        this.totalBidTextField.setEditable(false);
+        this.commissionBidTextField.setEditable(false);
+        this.balanceBidTextField.setEditable(false);
+        this.trailingStartMenuItem.setText("start");
     }
 
     private void fillBalanceTableObservableList() {
@@ -241,14 +264,23 @@ public class BaseViewController {
                 calcAskTextField();
             }
         });
-
+        this.balanceBidTextField.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                calcBidByBalance();
+            }
+        });
+        this.balanceAskTextField.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                calcAskByBalance();
+            }
+        });
     }
 
     private void fillTickerPairTable(UserBalanceDto userBalanceDto) {
         this.tickerPairObservableList.clear();
 
         if (userBalanceDto != null) {
-            List<TickerDto> tickerDtoList = TickerService.getTickerDtoListByCurrency(userBalanceDto.currencyProperty().get());
+            List<TickerDto> tickerDtoList = tickerService.getTickerListByCurrency(userBalanceDto.currencyProperty().get());
             this.tickerPairObservableList.addAll(tickerDtoList);
             this.tickerPairTable.setItems(tickerPairObservableList);
         }
@@ -360,7 +392,23 @@ public class BaseViewController {
         this.balanceAskTextField.setText(DecimalUtil.round(balance).toPlainString());
     }
 
+    private void calcBidByBalance() {
+        if (this.priceBidTextField.getText() != null) {
+            BigDecimal price = DecimalUtil.parse(this.priceBidTextField.getText());
+            BigDecimal quantity = new BigDecimal(userBalanceDto.getAmountBalance().doubleValue() / price.doubleValue());
 
+            this.quantityBidTextField.setText(DecimalUtil.round(quantity).toPlainString());
+        }
+    }
+
+    private void calcAskByBalance() {
+		if (this.priceAskTextField.getText() != null) {
+			BigDecimal price = DecimalUtil.parse(this.priceAskTextField.getText());
+			BigDecimal quantity = new BigDecimal(userBalanceDto.getAmountBalance().doubleValue() / price.doubleValue());
+
+			this.quantityAskTextField.setText(DecimalUtil.round(quantity).toPlainString());			
+		}	
+    }
 
     private void handleTrailingDialog(ObservableList<TickerDto> tickerPairObservableList) {
         try {
@@ -369,7 +417,7 @@ public class BaseViewController {
             Parent parent = (Parent) fxmlLoader.load();
 
             Stage modalStage = new Stage();
-            modalStage.setTitle("Трейлинг Стоп");
+            modalStage.setTitle("Trailing Stop");
             modalStage.initModality(Modality.APPLICATION_MODAL);
             Scene scene = new Scene(parent);
             modalStage.setScene(scene);

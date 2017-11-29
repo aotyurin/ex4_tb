@@ -37,6 +37,9 @@ public class TickerDto {
         this.volCurr = volCurr;
     }
 
+    public BigDecimal getSellPrice() {
+        return sellPrice;
+    }
 
     public StringProperty pairProperty() {
         return new SimpleStringProperty(pair);

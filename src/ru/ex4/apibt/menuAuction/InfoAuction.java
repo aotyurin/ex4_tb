@@ -5,7 +5,7 @@ import ru.ex4.apibt.model.PairSetting;
 import ru.ex4.apibt.model.Ticker;
 import ru.ex4.apibt.model.UserInfo;
 import ru.ex4.apibt.service.PairSettingsService;
-import ru.ex4.apibt.service.TickerService;
+import ru.ex4.apibt.service.TickerOldService;
 import ru.ex4.apibt.service.UserInfoService;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class InfoAuction {
                 }
             });
 
-            List<Ticker> tickerList = TickerService.getTickerDtos();
+            List<Ticker> tickerList = TickerOldService.getTickerDtos();
             for (Ticker ticker : tickerList) {
                 final String[] s = {"", ""};
                 PairSetting pairSettingByPair = PairSettingsService.getPairSettingByPair(ticker.getPair());

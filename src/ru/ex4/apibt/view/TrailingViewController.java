@@ -94,13 +94,6 @@ public class TrailingViewController {
 
     @FXML
     private void btnOk() {
-        // start thread
-
-        dialogStage.close();
-    }
-
-    @FXML
-    private void btnCancel() {
         dialogStage.close();
     }
 

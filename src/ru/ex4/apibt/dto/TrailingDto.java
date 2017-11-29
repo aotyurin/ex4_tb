@@ -45,6 +45,10 @@ public class TrailingDto {
         return dateNotify;
     }
 
+    public void setDateNotify(Date dateNotify) {
+        this.dateNotify = dateNotify;
+    }
+
     public StringProperty pairProperty() {
         return new SimpleStringProperty(pair);
     }
