@@ -1,17 +1,19 @@
 package ru.ex4.apibt.model;
 
+import java.math.BigDecimal;
+
 public class OrderCreate {
     //      валютная пара
     private String pair;
     //    кол-во по ордеру
-    private float quantity;
+    private BigDecimal quantity;
     //    цена по ордеру (страйк)
-    private float price;
+    private BigDecimal price;
     //    тип ордера
     private TypeOrder type;
 
 
-    public OrderCreate(String pair, float quantity, float price, TypeOrder type) {
+    public OrderCreate(String pair, BigDecimal quantity, BigDecimal price, TypeOrder type) {
         this.pair = pair;
         this.price = price;
         this.quantity = quantity;
@@ -23,11 +25,11 @@ public class OrderCreate {
         return pair;
     }
 
-    public float getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public float getQuantity() {
+    public BigDecimal getQuantity() {
         return quantity;
     }
 

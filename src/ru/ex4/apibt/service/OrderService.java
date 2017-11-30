@@ -54,6 +54,13 @@ public class OrderService {
         return Collections.emptyList();
     }
 
+    public OrderCreateResult orderCreate(OrderCreate orderCreate) throws IOException {
+        OrderCreateResult orderCreateResult = exFactory.orderCreate(orderCreate);
+        Logs.info(orderCreateResult.toString());
+
+        return orderCreateResult;
+    }
+
     public List<OpenOrderDto> getOrderByPair(String pair) {
         ArrayList<OpenOrderDto> openOrderDtoList = new ArrayList<>();
         try {

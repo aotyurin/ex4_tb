@@ -71,9 +71,9 @@ public class Currency {
             float quantity = (balances - balances * IExConst.STOCK_FEE) / price;
             Logs.info(String.format("Выставляем ордер на покупку: кол-во %1$s, цена %2$s", quantity, price));
             Logs.debug(java.util.Currency.class.getName(), "Текущие цены и объемы торгов: " + tickerByPair);
-            OrderCreate orderCreate = new OrderCreate(IExConst.PAIR, quantity, price, TypeOrder.buy);
-            String orderId = OrderService.orderCreate(orderCreate, buyPrice);
-            OrderService.setStackOrder(orderId);
+//            OrderCreate orderCreate = new OrderCreate(IExConst.PAIR, quantity, price, TypeOrder.buy);
+//            String orderId = OrderService.orderCreate(orderCreate, buyPrice);
+//            OrderService.setStackOrder(orderId);
 
             InitBaseService.updateChangeData();
 
@@ -98,8 +98,8 @@ public class Currency {
                     float price = sellPrice + sellPrice * IExConst.STOCK_FEE + sellPrice * IExConst.PROFIT_MARKUP;
                     Logs.info(String.format("Выставляем ордер на продажу: кол-во %1$s, по цене %2$s, цена покупки %3$s", quantity, price, historyPrice));
                     Logs.debug(java.util.Currency.class.getName(), "Текущие цены и объемы торгов: " + tickerByPair);
-                    OrderCreate orderCreate = new OrderCreate(IExConst.PAIR, quantity, price, TypeOrder.sell);
-                    OrderService.orderCreate(orderCreate, sellPrice);
+//                    OrderCreate orderCreate = new OrderCreate(IExConst.PAIR, quantity, price, TypeOrder.sell);
+//                    OrderService.orderCreate(orderCreate, sellPrice);
 
                     InitBaseService.updateChangeData();
 
