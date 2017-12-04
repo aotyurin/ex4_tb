@@ -70,8 +70,8 @@ public class OpenOrder {
                                             if (quantity > 0) {
                                                 float buyPrice = tickerByPair.getBuyPrice().floatValue();
                                                 float priceProfit = buyPrice + buyPrice * IExConst.STOCK_FEE + buyPrice * IExConst.PROFIT_MARKUP / 10;
-                                                OrderCreate orderCreate = new OrderCreate(IExConst.PAIR, quantity, priceProfit, TypeOrder.sell);
-                                                OrderService.orderCreate(orderCreate, sellPrice);
+//                                                OrderCreate orderCreate = new OrderCreate(IExConst.PAIR, quantity, priceProfit, TypeOrder.sell);
+//                                                OrderService.orderCreate(orderCreate, sellPrice);
                                             } else {
                                                 Logs.info(" - checkOrder. ордер не пересоздан, тк баланс = : " + quantity);
                                             }

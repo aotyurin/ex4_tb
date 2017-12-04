@@ -6,11 +6,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import ru.ex4.apibt.model.TrendType;
 import ru.ex4.apibt.util.DateUtil;
+import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class TrailingDto {
+public class TrailingDto implements IFxmlDto {
     private String pair;
     private TrendType trendType;
     private BigDecimal price;

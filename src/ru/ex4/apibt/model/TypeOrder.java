@@ -12,5 +12,8 @@ public enum TypeOrder {
     //    ордер на покупку по рынку на определенную сумму
     market_buy_total,
     //    ордер на продажу по рынку на определенную сумму
-    market_sell_total
+    market_sell_total,
+
+    buy_loss,
+    sell_loss
 }

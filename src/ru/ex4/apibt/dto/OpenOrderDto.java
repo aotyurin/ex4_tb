@@ -30,8 +30,37 @@ public class OpenOrderDto {
         this.created = created;
     }
 
+    public String getPair() {
+        return pair;
+    }
+
+    public TypeOrder getType() {
+        return type;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public BigDecimal getQuantity() {
+        return quantity;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
     public String getOrderId() {
         return orderId;
+    }
+
+
+    public StringProperty pairProperty() {
+        return new SimpleStringProperty(pair);
     }
 
     public StringProperty createdProperty() {

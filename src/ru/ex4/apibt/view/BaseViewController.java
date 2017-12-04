@@ -2,24 +2,30 @@ package ru.ex4.apibt.view;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventType;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.Main;
-import ru.ex4.apibt.dto.OpenOrderDto;
-import ru.ex4.apibt.dto.OrderBookDto;
-import ru.ex4.apibt.dto.TickerDto;
-import ru.ex4.apibt.dto.UserBalanceDto;
+import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.log.Logs;
+import ru.ex4.apibt.logic.LossOrderProcess;
 import ru.ex4.apibt.logic.TrailingProcess;
+import ru.ex4.apibt.model.OrderCreate;
+import ru.ex4.apibt.model.OrderCreateResult;
+import ru.ex4.apibt.model.TypeOrder;
 import ru.ex4.apibt.service.*;
 import ru.ex4.apibt.util.DecimalUtil;
+import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
+import ru.ex4.apibt.view.fxmlManager.LoaderFxmlController;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -37,9 +43,11 @@ public class BaseViewController {
     private TickerService tickerService;
     private OrderBookService orderBookService;
     private OrderService orderService;
+    private LossOrderService lossOrderService;
 
     private UserBalanceDto userBalanceDto;
     private TrailingProcess trailingProcess;
+    private LossOrderProcess lossOrderProcess;
 
 
     @FXML
@@ -67,6 +75,9 @@ public class BaseViewController {
     private TableColumn<TickerDto, Boolean> changePriceFactorTickerPairTableColumn;
     @FXML
     private TableColumn<TickerDto, String> volumeTickerPairTableColumn;
+
+    @FXML
+    private Label pairLabel;
 
     @FXML
     private TableView<OrderBookDto.Ask> askOrderBookTable;
@@ -99,32 +110,34 @@ public class BaseViewController {
     private TableColumn<OpenOrderDto, Number> amountOpenOrderTableColumn;
 
     @FXML
-    private TextField quantityAskTextField;
+    private TextField quantitySellTextField;
     @FXML
-    private TextField priceAskTextField;
+    private TextField priceSellTextField;
     @FXML
-    private TextField totalAskTextField;
+    private TextField totalSellTextField;
     @FXML
-    private TextField commissionAskTextField;
+    private TextField commissionSellTextField;
     @FXML
-    private TextField balanceAskTextField;
+    private TextField balanceSellTextField;
 
     @FXML
-    private TextField quantityBidTextField;
+    private TextField quantityBuyTextField;
     @FXML
-    private TextField priceBidTextField;
+    private TextField priceBuyTextField;
     @FXML
-    private TextField totalBidTextField;
+    private TextField totalBuyTextField;
     @FXML
-    private TextField commissionBidTextField;
+    private TextField commissionBuyTextField;
     @FXML
-    private TextField balanceBidTextField;
+    private TextField balanceBuyTextField;
 
     @FXML
     private CheckBox allCurrencyCheckBox;
 
     @FXML
     private MenuItem trailingStartMenuItem;
+    @FXML
+    private MenuItem lossOrderStartMenuItem;
 
 
     public BaseViewController() {
@@ -139,6 +152,7 @@ public class BaseViewController {
         this.tickerService = new TickerService();
         this.orderBookService = new OrderBookService();
         this.orderService = new OrderService();
+        this.lossOrderService = new LossOrderService();
     }
 
     @FXML
@@ -155,7 +169,7 @@ public class BaseViewController {
     }
 
     @FXML
-    private void OnTrailingShow() {
+    private void OnTrailingShow(ActionEvent actionEvent) {
         UserBalanceDto selectedItem = this.userBalanceTable.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
             if (this.tickerPairObservableList.size() > 0) {
@@ -165,7 +179,7 @@ public class BaseViewController {
     }
 
     @FXML
-    private void OnTrailingStart() {
+    private void OnTrailingStart(ActionEvent actionEvent) {
         if (trailingProcess != null) {
             trailingProcess.interrupt();
         }
@@ -176,7 +190,7 @@ public class BaseViewController {
     }
 
     @FXML
-    private void OnTrailingStop() {
+    private void OnTrailingStop(ActionEvent actionEvent) {
         if (trailingProcess != null) {
             trailingProcess.interrupt();
 
@@ -184,15 +198,81 @@ public class BaseViewController {
         }
     }
 
+    @FXML
+    public void OnLossOrderShow(ActionEvent actionEvent) {
+        handleLossOrderDialog();
+    }
+
+    @FXML
+    public void OnLossOrderStart(ActionEvent actionEvent) {
+        if (lossOrderProcess != null) {
+            lossOrderProcess.interrupt();
+        }
+        lossOrderProcess = new LossOrderProcess();
+        lossOrderProcess.start();
+
+        this.lossOrderStartMenuItem.setText("running");
+    }
+
+    @FXML
+    public void OnLossOrderStop(ActionEvent actionEvent) {
+        if (lossOrderProcess != null) {
+            lossOrderProcess.interrupt();
+
+            this.lossOrderStartMenuItem.setText("start");
+        }
+    }
+
+    @FXML
+    private void OnClickBuyNow() {
+        String balanceText = this.balanceBuyTextField.getText();
+        if (balanceText != null && !balanceText.equals("")) {
+            BigDecimal balance = new BigDecimal(balanceText);
+            if (balance.compareTo(BigDecimal.ZERO) != -1) {
+                System.out.println("OnClickBuyNow");
+
+                String pair = this.pairLabel.getText();
+                String quantityText = this.quantityBuyTextField.getText();
+                String priceText = this.priceBuyTextField.getText();
+                try {
+                    OrderCreateResult createResult = orderService.orderCreate(new OrderCreate(pair, new BigDecimal(quantityText), new BigDecimal(priceText), TypeOrder.buy));
+                    if (!createResult.getResult()) {
+                        Logs.error("Ордер не создан: " + createResult.getError());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    @FXML
+    private void OnClickBuyLoss() {
+        String balanceText = this.balanceBuyTextField.getText();
+        if (balanceText != null && !balanceText.equals("")) {
+            BigDecimal balance = new BigDecimal(balanceText);
+            if (balance.compareTo(BigDecimal.ZERO) != -1) {
+                System.out.println("OnClickBuyLoss");
+
+                String pair = this.pairLabel.getText();
+                String quantityText = this.quantityBuyTextField.getText();
+                String priceText = this.priceBuyTextField.getText();
+
+                handleLossOrderEditDialog(pair, new BigDecimal(quantityText), new BigDecimal(priceText), TypeOrder.buy_loss);
+            }
+        }
+    }
+
     private void initControls() {
         this.allCurrencyCheckBox.setSelected(true);
-        this.totalAskTextField.setEditable(false);
-        this.commissionAskTextField.setEditable(false);
-        this.balanceAskTextField.setEditable(false);
-        this.totalBidTextField.setEditable(false);
-        this.commissionBidTextField.setEditable(false);
-        this.balanceBidTextField.setEditable(false);
+        this.totalSellTextField.setEditable(false);
+        this.commissionSellTextField.setEditable(false);
+        this.balanceSellTextField.setEditable(false);
+        this.totalBuyTextField.setEditable(false);
+        this.commissionBuyTextField.setEditable(false);
+        this.balanceBuyTextField.setEditable(false);
         this.trailingStartMenuItem.setText("start");
+        this.pairLabel.setText("");
     }
 
     private void fillBalanceTableObservableList() {
@@ -244,32 +324,32 @@ public class BaseViewController {
             fillAskTextField(newValue);
         });
 
-        this.quantityBidTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+        this.quantityBuyTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.equals(oldValue)) {
                 calcBidTextField();
             }
         });
-        this.priceBidTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+        this.priceBuyTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.equals(oldValue)) {
                 calcBidTextField();
             }
         });
-        this.quantityAskTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+        this.quantitySellTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.equals(oldValue)) {
                 calcAskTextField();
             }
         });
-        this.priceAskTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+        this.priceSellTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.equals(oldValue)) {
                 calcAskTextField();
             }
         });
-        this.balanceBidTextField.setOnMouseClicked(event -> {
+        this.balanceBuyTextField.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 calcBidByBalance();
             }
         });
-        this.balanceAskTextField.setOnMouseClicked(event -> {
+        this.balanceSellTextField.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 calcAskByBalance();
             }
@@ -309,6 +389,8 @@ public class BaseViewController {
 
             this.bidOrderBookObservableList.addAll(orderBookDto.getBidList());
             this.bidOrderBookTable.setItems(bidOrderBookObservableList);
+
+            this.pairLabel.setText(pair);
         }
     }
 
@@ -345,72 +427,74 @@ public class BaseViewController {
 
     private void fillBidTextField(OrderBookDto.Ask value) {
         if (value != null) {
-            this.quantityBidTextField.setText(value.getAmount().toPlainString());
-            this.priceBidTextField.setText(value.getPrice().toPlainString());
-            this.priceAskTextField.setText(value.getPrice().toPlainString());
+            this.quantityBuyTextField.setText(value.getAmount().toPlainString());
+            this.priceBuyTextField.setText(value.getPrice().toPlainString());
+            this.priceSellTextField.setText(value.getPrice().toPlainString());
         } else {
-            this.quantityBidTextField.setText("");
-            this.priceBidTextField.setText("");
+            this.quantityBuyTextField.setText("");
+            this.priceBuyTextField.setText("");
         }
     }
 
     private void fillAskTextField(OrderBookDto.Bid value) {
         if (value != null) {
-            this.quantityAskTextField.setText(value.getAmount().toPlainString());
-            this.priceAskTextField.setText(value.getPrice().toPlainString());
-            this.priceBidTextField.setText(value.getPrice().toPlainString());
+            this.quantitySellTextField.setText(value.getAmount().toPlainString());
+            this.priceSellTextField.setText(value.getPrice().toPlainString());
+            this.priceBuyTextField.setText(value.getPrice().toPlainString());
         } else {
-            this.quantityAskTextField.setText("");
-            this.priceAskTextField.setText("");
+            this.quantitySellTextField.setText("");
+            this.priceSellTextField.setText("");
         }
     }
 
 
     private void calcBidTextField() {
-        BigDecimal quantity = DecimalUtil.parse(this.quantityBidTextField.getText());
-        BigDecimal price = DecimalUtil.parse(this.priceBidTextField.getText());
+        BigDecimal quantity = DecimalUtil.parse(this.quantityBuyTextField.getText());
+        BigDecimal price = DecimalUtil.parse(this.priceBuyTextField.getText());
 
         BigDecimal total = quantity.multiply(price);
         BigDecimal commission = quantity.multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
         BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total.add(commission));
 
-        this.totalBidTextField.setText(DecimalUtil.round(total).toPlainString());
-        this.commissionBidTextField.setText(DecimalUtil.round(commission).toPlainString());
-        this.balanceBidTextField.setText(DecimalUtil.round(balance).toPlainString());
+        this.totalBuyTextField.setText(DecimalUtil.round(total).toPlainString());
+        this.commissionBuyTextField.setText(DecimalUtil.round(commission).toPlainString());
+        this.balanceBuyTextField.setText(DecimalUtil.round(balance).toPlainString());
     }
 
     private void calcAskTextField() {
-        BigDecimal quantity = DecimalUtil.parse(this.quantityAskTextField.getText());
-        BigDecimal price = DecimalUtil.parse(this.priceAskTextField.getText());
+        BigDecimal quantity = DecimalUtil.parse(this.quantitySellTextField.getText());
+        BigDecimal price = DecimalUtil.parse(this.priceSellTextField.getText());
 
         BigDecimal total = quantity.multiply(price);
         BigDecimal commission = quantity.multiply(BigDecimal.valueOf(IExConst.STOCK_FEE));
         BigDecimal balance = userBalanceDto.getAmountBalance().subtract(total.add(commission));
 
-        this.totalAskTextField.setText(DecimalUtil.round(total).toPlainString());
-        this.commissionAskTextField.setText(DecimalUtil.round(commission).toPlainString());
-        this.balanceAskTextField.setText(DecimalUtil.round(balance).toPlainString());
+        this.totalSellTextField.setText(DecimalUtil.round(total).toPlainString());
+        this.commissionSellTextField.setText(DecimalUtil.round(commission).toPlainString());
+        this.balanceSellTextField.setText(DecimalUtil.round(balance).toPlainString());
     }
 
     private void calcBidByBalance() {
-        if (this.priceBidTextField.getText() != null) {
-            BigDecimal price = DecimalUtil.parse(this.priceBidTextField.getText());
+        if (this.priceBuyTextField.getText() != null) {
+            BigDecimal price = DecimalUtil.parse(this.priceBuyTextField.getText());
             BigDecimal quantity = new BigDecimal(userBalanceDto.getAmountBalance().doubleValue() / price.doubleValue());
 
-            this.quantityBidTextField.setText(DecimalUtil.round(quantity).toPlainString());
+            this.quantityBuyTextField.setText(DecimalUtil.round(quantity).toPlainString());
         }
     }
 
     private void calcAskByBalance() {
-		if (this.priceAskTextField.getText() != null) {
-			BigDecimal price = DecimalUtil.parse(this.priceAskTextField.getText());
-			BigDecimal quantity = new BigDecimal(userBalanceDto.getAmountBalance().doubleValue() / price.doubleValue());
+        if (this.priceSellTextField.getText() != null) {
+            BigDecimal price = DecimalUtil.parse(this.priceSellTextField.getText());
+            BigDecimal quantity = new BigDecimal(userBalanceDto.getAmountBalance().doubleValue() / price.doubleValue());
 
-			this.quantityAskTextField.setText(DecimalUtil.round(quantity).toPlainString());			
-		}	
+            this.quantitySellTextField.setText(DecimalUtil.round(quantity).toPlainString());
+        }
     }
 
     private void handleTrailingDialog(ObservableList<TickerDto> tickerPairObservableList) {
+        //todo ObservableList<TickerDto> ????
+
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/TrailingView.fxml"));
 
@@ -432,5 +516,71 @@ public class BaseViewController {
         }
     }
 
+    private void handleLossOrderDialog() {
+        System.out.println("123");
+
+        LoaderFxmlController fxmlController = new LoaderFxmlController<LossOrderViewController>();
+        fxmlController.lossOrderDialog("LossOrderView");
+
+//        try {
+//            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/LossOrderView.fxml"));
+//
+//            Parent parent = (Parent) fxmlLoader.load();
+//
+//            Stage modalStage = new Stage();
+//            modalStage.setTitle("Loss Order");
+//            modalStage.initModality(Modality.APPLICATION_MODAL);
+//            Scene scene = new Scene(parent);
+//            modalStage.setScene(scene);
+//
+//            LossOrderViewController lossOrderViewController = (LossOrderViewController) fxmlLoader.getController();
+//            lossOrderViewController.initCtrl();
+//            lossOrderViewController.setDialogStage(modalStage);
+//
+//            modalStage.showAndWait();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+
+
+    private void handleLossOrderEditDialog(String pair, BigDecimal quantity, BigDecimal price, TypeOrder typeOrder) {
+        BigDecimal priceLoss = BigDecimal.ZERO;
+        BigDecimal priceStep = BigDecimal.ZERO;
+        LossOrderDto lossOrderDto = new LossOrderDto(pair, quantity, price, typeOrder, priceStep, priceLoss);
+//        LossOrderDto lossOrderDto = showEditDialog(new LossOrderDto(pair, quantity, price, typeOrder, priceStep, priceLoss));
+
+        LoaderFxmlController fxmlController = new LoaderFxmlController<LossOrderEditDialogController>();
+        LossOrderDto lossOrderView = (LossOrderDto) fxmlController.lossOrderEditDialog(lossOrderDto, "LossOrderEditDialog");
+
+        if (lossOrderView != null) {
+            lossOrderService.save(lossOrderView);
+        }
+    }
+
+//    private LossOrderDto showEditDialog(LossOrderDto lossOrderDto) {
+//        try {
+//            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/LossOrderEditDialog.fxml"));
+//            Parent parent = (Parent) fxmlLoader.load();
+//
+//            Stage modalStage = new Stage();
+//            modalStage.setTitle("new title");
+//            modalStage.initModality(Modality.APPLICATION_MODAL);
+//            Scene scene = new Scene(parent);
+//            modalStage.setScene(scene);
+//
+//            LossOrderEditDialogController editDialogController = (LossOrderEditDialogController) fxmlLoader.getController();
+//            editDialogController.initCtrl(lossOrderDto);
+//            editDialogController.setDialogStage(modalStage);
+//
+//            modalStage.showAndWait();
+//
+//            return editDialogController.getResult();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
 }
