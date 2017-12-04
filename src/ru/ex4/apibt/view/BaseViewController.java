@@ -17,12 +17,15 @@ import ru.ex4.apibt.IExConst;
 import ru.ex4.apibt.Main;
 import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.log.Logs;
+import ru.ex4.apibt.logic.LossOrderProcess;
 import ru.ex4.apibt.logic.TrailingProcess;
 import ru.ex4.apibt.model.OrderCreate;
 import ru.ex4.apibt.model.OrderCreateResult;
 import ru.ex4.apibt.model.TypeOrder;
 import ru.ex4.apibt.service.*;
 import ru.ex4.apibt.util.DecimalUtil;
+import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
+import ru.ex4.apibt.view.fxmlManager.LoaderFxmlController;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -44,6 +47,7 @@ public class BaseViewController {
 
     private UserBalanceDto userBalanceDto;
     private TrailingProcess trailingProcess;
+    private LossOrderProcess lossOrderProcess;
 
 
     @FXML
@@ -136,7 +140,6 @@ public class BaseViewController {
     private MenuItem lossOrderStartMenuItem;
 
 
-
     public BaseViewController() {
         this.userBalanceMasterObservableList = FXCollections.observableArrayList();
         this.userBalanceFilterObservableList = FXCollections.observableArrayList();
@@ -197,23 +200,33 @@ public class BaseViewController {
 
     @FXML
     public void OnLossOrderShow(ActionEvent actionEvent) {
-
+        handleLossOrderDialog();
     }
 
     @FXML
     public void OnLossOrderStart(ActionEvent actionEvent) {
+        if (lossOrderProcess != null) {
+            lossOrderProcess.interrupt();
+        }
+        lossOrderProcess = new LossOrderProcess();
+        lossOrderProcess.start();
 
+        this.lossOrderStartMenuItem.setText("running");
     }
 
     @FXML
     public void OnLossOrderStop(ActionEvent actionEvent) {
+        if (lossOrderProcess != null) {
+            lossOrderProcess.interrupt();
 
+            this.lossOrderStartMenuItem.setText("start");
+        }
     }
 
     @FXML
     private void OnClickBuyNow() {
         String balanceText = this.balanceBuyTextField.getText();
-        if (balanceText != null) {
+        if (balanceText != null && !balanceText.equals("")) {
             BigDecimal balance = new BigDecimal(balanceText);
             if (balance.compareTo(BigDecimal.ZERO) != -1) {
                 System.out.println("OnClickBuyNow");
@@ -236,7 +249,7 @@ public class BaseViewController {
     @FXML
     private void OnClickBuyLoss() {
         String balanceText = this.balanceBuyTextField.getText();
-        if (balanceText != null) {
+        if (balanceText != null && !balanceText.equals("")) {
             BigDecimal balance = new BigDecimal(balanceText);
             if (balance.compareTo(BigDecimal.ZERO) != -1) {
                 System.out.println("OnClickBuyLoss");
@@ -245,7 +258,7 @@ public class BaseViewController {
                 String quantityText = this.quantityBuyTextField.getText();
                 String priceText = this.priceBuyTextField.getText();
 
-                lossOrderService.save(new LossOrderDto(pair, new BigDecimal(quantityText), new BigDecimal(priceText), TypeOrder.buy_loss, BigDecimal.ZERO));
+                handleLossOrderEditDialog(pair, new BigDecimal(quantityText), new BigDecimal(priceText), TypeOrder.buy_loss);
             }
         }
     }
@@ -480,6 +493,8 @@ public class BaseViewController {
     }
 
     private void handleTrailingDialog(ObservableList<TickerDto> tickerPairObservableList) {
+        //todo ObservableList<TickerDto> ????
+
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/TrailingView.fxml"));
 
@@ -501,5 +516,71 @@ public class BaseViewController {
         }
     }
 
+    private void handleLossOrderDialog() {
+        System.out.println("123");
+
+        LoaderFxmlController fxmlController = new LoaderFxmlController<LossOrderViewController>();
+        fxmlController.lossOrderDialog("LossOrderView");
+
+//        try {
+//            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/LossOrderView.fxml"));
+//
+//            Parent parent = (Parent) fxmlLoader.load();
+//
+//            Stage modalStage = new Stage();
+//            modalStage.setTitle("Loss Order");
+//            modalStage.initModality(Modality.APPLICATION_MODAL);
+//            Scene scene = new Scene(parent);
+//            modalStage.setScene(scene);
+//
+//            LossOrderViewController lossOrderViewController = (LossOrderViewController) fxmlLoader.getController();
+//            lossOrderViewController.initCtrl();
+//            lossOrderViewController.setDialogStage(modalStage);
+//
+//            modalStage.showAndWait();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+
+
+    private void handleLossOrderEditDialog(String pair, BigDecimal quantity, BigDecimal price, TypeOrder typeOrder) {
+        BigDecimal priceLoss = BigDecimal.ZERO;
+        BigDecimal priceStep = BigDecimal.ZERO;
+        LossOrderDto lossOrderDto = new LossOrderDto(pair, quantity, price, typeOrder, priceStep, priceLoss);
+//        LossOrderDto lossOrderDto = showEditDialog(new LossOrderDto(pair, quantity, price, typeOrder, priceStep, priceLoss));
+
+        LoaderFxmlController fxmlController = new LoaderFxmlController<LossOrderEditDialogController>();
+        LossOrderDto lossOrderView = (LossOrderDto) fxmlController.lossOrderEditDialog(lossOrderDto, "LossOrderEditDialog");
+
+        if (lossOrderView != null) {
+            lossOrderService.save(lossOrderView);
+        }
+    }
+
+//    private LossOrderDto showEditDialog(LossOrderDto lossOrderDto) {
+//        try {
+//            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/LossOrderEditDialog.fxml"));
+//            Parent parent = (Parent) fxmlLoader.load();
+//
+//            Stage modalStage = new Stage();
+//            modalStage.setTitle("new title");
+//            modalStage.initModality(Modality.APPLICATION_MODAL);
+//            Scene scene = new Scene(parent);
+//            modalStage.setScene(scene);
+//
+//            LossOrderEditDialogController editDialogController = (LossOrderEditDialogController) fxmlLoader.getController();
+//            editDialogController.initCtrl(lossOrderDto);
+//            editDialogController.setDialogStage(modalStage);
+//
+//            modalStage.showAndWait();
+//
+//            return editDialogController.getResult();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
 }

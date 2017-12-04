@@ -12,9 +12,6 @@ import java.io.IOException;
 public class BuyAuction {
 
     public void start() throws IOException {
-        // todo Currency.buyBase
-
-
         float balances_quoted = UserInfoService.getBalanceByCurrency(IExConst.CURRENCY_QUOTED);
         Logs.info("Доступная котируемая валюта:" + balances_quoted);
         Ticker tickerByPair = TickerOldService.getTickerDtoByPair(IExConst.PAIR);

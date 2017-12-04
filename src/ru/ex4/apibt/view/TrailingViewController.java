@@ -15,6 +15,8 @@ import ru.ex4.apibt.Main;
 import ru.ex4.apibt.dto.TickerDto;
 import ru.ex4.apibt.dto.TrailingDto;
 import ru.ex4.apibt.service.TrailingService;
+import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
+import ru.ex4.apibt.view.fxmlManager.LoaderFxmlController;
 
 import java.io.IOException;
 import java.util.List;
@@ -70,7 +72,7 @@ public class TrailingViewController {
     private void OnAddTrailingDialogShow() {
         TickerDto selectedItem = this.tickerPairTable.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
-            handleTrailingDialog(selectedItem.getPair(), null);
+            handleTrailingEditDialog(selectedItem.getPair(), null);
         }
     }
 
@@ -78,7 +80,7 @@ public class TrailingViewController {
     private void OnEditTrailingDialogShow() {
         TrailingDto selectedItem = this.trailingTable.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
-            handleTrailingDialog(selectedItem.getPair(), selectedItem);
+            handleTrailingEditDialog(selectedItem.getPair(), selectedItem);
         }
     }
 
@@ -158,34 +160,42 @@ public class TrailingViewController {
         this.dateNotifyTrailingTableColumn.setCellValueFactory(param -> param.getValue().dateNotifyProperty());
     }
 
-    private void handleTrailingDialog(String pair, TrailingDto trailingDto) {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/TrailingEditDialog.fxml"));
+    private void handleTrailingEditDialog(String pair, TrailingDto trailingDto) {
+        LoaderFxmlController fxmlController = new LoaderFxmlController<TrailingEditDialogController>();
+        TrailingDto result = (TrailingDto) fxmlController.lossOrderEditDialog(trailingDto, "TrailingEditDialog");
 
-            Parent parent = (Parent) fxmlLoader.load();
+        if (result != null) {
+            trailingService.save(result);
 
-            Stage modalStage = new Stage();
-            modalStage.setTitle("stop..tr..");
-            modalStage.initModality(Modality.APPLICATION_MODAL);
-            Scene scene = new Scene(parent);
-            modalStage.setScene(scene);
-
-            TrailingEditDialogController trailingViewController = (TrailingEditDialogController) fxmlLoader.getController();
-            trailingViewController.initCtrl(pair, trailingDto);
-            trailingViewController.setDialogStage(modalStage);
-
-            modalStage.showAndWait();
-
-            TrailingDto result = trailingViewController.getResult();
-            if (result != null) {
-                trailingService.save(result);
-
-                fillStopSignalTable();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            fillStopSignalTable();
         }
+
+//        try {
+//            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/TrailingEditDialog.fxml"));
+//
+//            Parent parent = (Parent) fxmlLoader.load();
+//
+//            Stage modalStage = new Stage();
+//            modalStage.setTitle("stop..tr..");
+//            modalStage.initModality(Modality.APPLICATION_MODAL);
+//            Scene scene = new Scene(parent);
+//            modalStage.setScene(scene);
+//
+//            TrailingEditDialogController trailingViewController = (TrailingEditDialogController) fxmlLoader.getController();
+//            trailingViewController.initCtrl(pair, trailingDto);
+//            trailingViewController.setDialogStage(modalStage);
+//
+//            modalStage.showAndWait();
+//
+//            TrailingDto result = trailingViewController.getResult();
+//            if (result != null) {
+//                trailingService.save(result);
+//
+//                fillStopSignalTable();
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 }

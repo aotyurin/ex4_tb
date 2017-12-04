@@ -2,10 +2,8 @@ package ru.ex4.apibt.dao;
 
 import ru.ex4.apibt.bd.JdbcTemplate;
 import ru.ex4.apibt.bd.PreparedParamsSetter;
-import ru.ex4.apibt.model.TrendType;
 import ru.ex4.apibt.model.TypeOrder;
 import ru.ex4.apibt.model.custom.LossOrder;
-import ru.ex4.apibt.model.custom.Trailing;
 import ru.ex4.apibt.util.DateUtil;
 
 import java.sql.ResultSet;
@@ -31,8 +29,9 @@ public class LossOrderDao {
                 "  price,\n" +
                 "  quantity,\n" +
                 "  type,\n" +
-                "  created,\n" +
-                "  priceLoss\n" +
+                "  priceStep,\n" +
+                "  priceLoss,\n" +
+                "  created \n" +
                 " FROM Loss_Order ";
 
         List<LossOrder> lossOrderList = new ArrayList<>();
@@ -44,8 +43,9 @@ public class LossOrderDao {
                         resultSet.getBigDecimal("price"),
                         resultSet.getBigDecimal("quantity"),
                         TypeOrder.valueOf(resultSet.getString("type")),
-                        DateUtil.parse(resultSet.getString("created")),
-                        resultSet.getBigDecimal("priceLoss")));
+                        resultSet.getBigDecimal("priceStep"),
+                        resultSet.getBigDecimal("priceLoss"),
+                        DateUtil.parse(resultSet.getString("created")) ));
             }
         } catch (SQLException | ParseException e) {
             e.printStackTrace();
@@ -55,15 +55,16 @@ public class LossOrderDao {
     }
 
     public void save(LossOrder lossOrder) {
-        String sql = "INSERT OR REPLACE INTO Stop_Trailing VALUES (:pair, :price, :quantity, :type, :created, :priceLoss);";
+        String sql = "INSERT OR REPLACE INTO Stop_Trailing VALUES (:pair, :price, :quantity, :type, :priceStep, :priceLoss, :created);";
 
         PreparedParamsSetter prs = new PreparedParamsSetter();
         prs.setValues("pair", lossOrder.getPair());
         prs.setValues("price", lossOrder.getPrice());
         prs.setValues("quantity", lossOrder.getQuantity());
         prs.setValues("type", lossOrder.getType().name());
-        prs.setValues("created", DateUtil.format(lossOrder.getCreated()));
+        prs.setValues("priceStep", lossOrder.getPriceLoss());
         prs.setValues("priceLoss", lossOrder.getPriceLoss());
+        prs.setValues("created", DateUtil.format(lossOrder.getCreated()));
 
         jdbcTemplate.executeUpdate(sql, prs);
     }

@@ -58,6 +58,11 @@ public class OpenOrderDto {
         return orderId;
     }
 
+
+    public StringProperty pairProperty() {
+        return new SimpleStringProperty(pair);
+    }
+
     public StringProperty createdProperty() {
         return new SimpleStringProperty(DateUtil.format(created));
     }

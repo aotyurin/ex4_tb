@@ -20,7 +20,7 @@ public class LossOrderService {
 
         List<LossOrder> lossOrderList = lossOrderDao.getLossOrderList();
         lossOrderList.forEach(lossOrder -> lossOrderDtoList.add(new LossOrderDto(lossOrder.getPair(), lossOrder.getQuantity(), lossOrder.getPrice(),
-                lossOrder.getType(), lossOrder.getPriceLoss())));
+                lossOrder.getType(), lossOrder.getPriceStep(), lossOrder.getPriceLoss())));
 
         return lossOrderDtoList;
     }
@@ -35,7 +35,7 @@ public class LossOrderService {
 
     private LossOrder convertDtoToModel(LossOrderDto lossOrderDto) {
         return new LossOrder(lossOrderDto.getPair(), lossOrderDto.getPrice(), lossOrderDto.getQuantity(), lossOrderDto.getType(),
-                lossOrderDto.getCreated(), lossOrderDto.getPriceLoss());
+                lossOrderDto.getPriceStep(), lossOrderDto.getPriceLoss(), lossOrderDto.getCreated());
     }
 
 }

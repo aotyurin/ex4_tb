@@ -2,6 +2,7 @@ package ru.ex4.apibt.logic;
 
 import ru.ex4.apibt.dto.TickerDto;
 import ru.ex4.apibt.dto.TrailingDto;
+import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.model.TrendType;
 import ru.ex4.apibt.service.TickerService;
 import ru.ex4.apibt.service.TrailingService;
@@ -22,11 +23,11 @@ public class TrailingProcess extends Thread {
     @Override
     public void run() {
         while (!Thread.interrupted()) {
-            System.out.println("start thread, while ...");
+            Logs.info("start 'TrailingProcessThread', while ...");
 
             List<TrailingDto> trailingDtoList = trailingService.getTrailingDtoList();
             if (trailingDtoList.size()==0) {
-                System.out.println("stop thread, trailing list is empty...");
+                Logs.info("stop 'TrailingProcessThread', trailing list is empty...");
                 currentThread().interrupt();
             }
 

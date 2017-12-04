@@ -9,13 +9,15 @@ import ru.ex4.apibt.dto.TrailingDto;
 import ru.ex4.apibt.model.TrendType;
 import ru.ex4.apibt.util.DateUtil;
 import ru.ex4.apibt.util.DecimalUtil;
+import ru.ex4.apibt.view.fxmlManager.IFxmlController;
+import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
-public class TrailingEditDialogController {
+public class TrailingEditDialogController implements IFxmlController {
     private TrailingDto trailingDto;
     private Stage dialogStage;
 
@@ -31,6 +33,7 @@ public class TrailingEditDialogController {
     private Label dateNotifyTrailingLabel;
     @FXML
     private Label priceTrailingErrorTextField;
+
 
 
     public void setDialogStage(Stage dialogStage) {
@@ -65,11 +68,12 @@ public class TrailingEditDialogController {
     }
 
 
-    public void initCtrl(String pair, TrailingDto trailingDto) {
-        this.trailingDto = trailingDto;
+    @Override
+    public void initCtrl(IFxmlDto trailingDto) {
+        this.trailingDto = (TrailingDto) trailingDto;
 
         fillComboBox();
-        fillViewControls(pair, trailingDto);
+        fillViewControls((TrailingDto) trailingDto);
     }
 
     private void fillComboBox() {
@@ -79,7 +83,7 @@ public class TrailingEditDialogController {
         }
     }
 
-    private void fillViewControls(String pair, TrailingDto trailingDto) {
+    private void fillViewControls(TrailingDto trailingDto) {
         if (trailingDto != null) {
             this.pairTrailingLabel.setText(trailingDto.pairProperty().get());
             this.trendTypeTrailingComboBox.getSelectionModel().select(trailingDto.trendTypeProperty().get());
@@ -87,7 +91,7 @@ public class TrailingEditDialogController {
             this.dateCreatedTrailingLabel.setText(trailingDto.dateCreatedProperty().get());
             this.dateNotifyTrailingLabel.setText(trailingDto.dateNotifyProperty().get());
         } else {
-            this.pairTrailingLabel.setText(pair);
+            this.pairTrailingLabel.setText("");
             this.priceTrailingTextField.setText("");
             this.dateCreatedTrailingLabel.setText(DateUtil.format(new Date()));
             this.dateNotifyTrailingLabel.setText("");
@@ -111,8 +115,8 @@ public class TrailingEditDialogController {
         return msg.length() == 0;
     }
 
-    public TrailingDto getResult() {
-        return this.trailingDto;
+    public IFxmlDto getResult() {
+        return (IFxmlDto) this.trailingDto;
     }
 
 }
