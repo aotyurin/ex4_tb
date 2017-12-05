@@ -11,12 +11,21 @@ import java.io.IOException;
 import java.net.URL;
 
 public class LoaderFxmlController<T extends IFxmlController> {
+
+    public void trailingDialog(IFxmlDto userBalanceDto, String templateName) {
+        fxmlLoader(userBalanceDto, templateName, "tr title");
+    }
+
+    public IFxmlDto trailingEditDialog(IFxmlDto trailingDto, String templateName) {
+        return fxmlLoader(trailingDto, templateName, "tr  edit title ");
+    }
+
     public IFxmlDto lossOrderDialog(String templateName) {
-        return fxmlLoader(null, templateName, "edit title");
+        return fxmlLoader(null, templateName, "lo title");
     }
 
     public IFxmlDto lossOrderEditDialog(IFxmlDto lossOrderDto, String templateName) {
-        return fxmlLoader(lossOrderDto, templateName, "new title");
+        return fxmlLoader(lossOrderDto, templateName, "lo edit title");
     }
 
 
@@ -44,4 +53,6 @@ public class LoaderFxmlController<T extends IFxmlController> {
         }
         return null;
     }
+
+
 }

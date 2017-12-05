@@ -4,17 +4,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import ru.ex4.apibt.IExConst;
-import ru.ex4.apibt.Main;
 import ru.ex4.apibt.dto.*;
 import ru.ex4.apibt.log.Logs;
 import ru.ex4.apibt.logic.LossOrderProcess;
@@ -24,7 +15,6 @@ import ru.ex4.apibt.model.OrderCreateResult;
 import ru.ex4.apibt.model.TypeOrder;
 import ru.ex4.apibt.service.*;
 import ru.ex4.apibt.util.DecimalUtil;
-import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
 import ru.ex4.apibt.view.fxmlManager.LoaderFxmlController;
 
 import java.io.IOException;
@@ -172,9 +162,7 @@ public class BaseViewController {
     private void OnTrailingShow(ActionEvent actionEvent) {
         UserBalanceDto selectedItem = this.userBalanceTable.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
-            if (this.tickerPairObservableList.size() > 0) {
-                handleTrailingDialog(tickerPairObservableList);
-            }
+            handleTrailingDialog(selectedItem);
         }
     }
 
@@ -229,8 +217,6 @@ public class BaseViewController {
         if (balanceText != null && !balanceText.equals("")) {
             BigDecimal balance = new BigDecimal(balanceText);
             if (balance.compareTo(BigDecimal.ZERO) != -1) {
-                System.out.println("OnClickBuyNow");
-
                 String pair = this.pairLabel.getText();
                 String quantityText = this.quantityBuyTextField.getText();
                 String priceText = this.priceBuyTextField.getText();
@@ -492,95 +478,28 @@ public class BaseViewController {
         }
     }
 
-    private void handleTrailingDialog(ObservableList<TickerDto> tickerPairObservableList) {
-        //todo ObservableList<TickerDto> ????
-
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/TrailingView.fxml"));
-
-            Parent parent = (Parent) fxmlLoader.load();
-
-            Stage modalStage = new Stage();
-            modalStage.setTitle("Trailing Stop");
-            modalStage.initModality(Modality.APPLICATION_MODAL);
-            Scene scene = new Scene(parent);
-            modalStage.setScene(scene);
-
-            TrailingViewController trailingViewController = (TrailingViewController) fxmlLoader.getController();
-            trailingViewController.initCtrl(tickerPairObservableList);
-            trailingViewController.setDialogStage(modalStage);
-
-            modalStage.showAndWait();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void handleTrailingDialog(UserBalanceDto userBalanceDto) {
+        LoaderFxmlController fxmlController = new LoaderFxmlController<TrailingViewController>();
+        fxmlController.trailingDialog(userBalanceDto, "TrailingView");
     }
 
     private void handleLossOrderDialog() {
-        System.out.println("123");
-
         LoaderFxmlController fxmlController = new LoaderFxmlController<LossOrderViewController>();
         fxmlController.lossOrderDialog("LossOrderView");
-
-//        try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/LossOrderView.fxml"));
-//
-//            Parent parent = (Parent) fxmlLoader.load();
-//
-//            Stage modalStage = new Stage();
-//            modalStage.setTitle("Loss Order");
-//            modalStage.initModality(Modality.APPLICATION_MODAL);
-//            Scene scene = new Scene(parent);
-//            modalStage.setScene(scene);
-//
-//            LossOrderViewController lossOrderViewController = (LossOrderViewController) fxmlLoader.getController();
-//            lossOrderViewController.initCtrl();
-//            lossOrderViewController.setDialogStage(modalStage);
-//
-//            modalStage.showAndWait();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
-
 
 
     private void handleLossOrderEditDialog(String pair, BigDecimal quantity, BigDecimal price, TypeOrder typeOrder) {
         BigDecimal priceLoss = BigDecimal.ZERO;
         BigDecimal priceStep = BigDecimal.ZERO;
         LossOrderDto lossOrderDto = new LossOrderDto(pair, quantity, price, typeOrder, priceStep, priceLoss);
-//        LossOrderDto lossOrderDto = showEditDialog(new LossOrderDto(pair, quantity, price, typeOrder, priceStep, priceLoss));
 
         LoaderFxmlController fxmlController = new LoaderFxmlController<LossOrderEditDialogController>();
-        LossOrderDto lossOrderView = (LossOrderDto) fxmlController.lossOrderEditDialog(lossOrderDto, "LossOrderEditDialog");
-
-        if (lossOrderView != null) {
-            lossOrderService.save(lossOrderView);
+        LossOrderDto result = (LossOrderDto) fxmlController.lossOrderEditDialog(lossOrderDto, "LossOrderEditDialog");
+        if (result != null) {
+            lossOrderService.save(result);
         }
     }
 
-//    private LossOrderDto showEditDialog(LossOrderDto lossOrderDto) {
-//        try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/LossOrderEditDialog.fxml"));
-//            Parent parent = (Parent) fxmlLoader.load();
-//
-//            Stage modalStage = new Stage();
-//            modalStage.setTitle("new title");
-//            modalStage.initModality(Modality.APPLICATION_MODAL);
-//            Scene scene = new Scene(parent);
-//            modalStage.setScene(scene);
-//
-//            LossOrderEditDialogController editDialogController = (LossOrderEditDialogController) fxmlLoader.getController();
-//            editDialogController.initCtrl(lossOrderDto);
-//            editDialogController.setDialogStage(modalStage);
-//
-//            modalStage.showAndWait();
-//
-//            return editDialogController.getResult();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
 
 }
