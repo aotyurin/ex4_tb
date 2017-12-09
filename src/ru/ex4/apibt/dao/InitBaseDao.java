@@ -24,7 +24,7 @@ public class InitBaseDao {
         String sqlCreate__Pair_Setting = "CREATE TABLE IF NOT EXISTS Pair_Setting(pair TEXT PRIMARY KEY, minQuantity REAL, maxQuantity REAL, minPrice REAL, maxPrice REAL, minAmount REAL, maxAmount REAL);";
         jdbcTemplate.executeUpdate(sqlCreate__Pair_Setting);
 
-        String sqlCreate__Loss_Order = "CREATE TABLE IF NOT EXISTS Loss_Order(pair TEXT, price REAL, quantity REAL, type TEXT, priceStep REAL, priceLoss REAL, created TEXT, PRIMARY KEY (pair, priceLoss));";
+        String sqlCreate__Loss_Order = "CREATE TABLE IF NOT EXISTS Loss_Order(pair TEXT, priceSell REAL, quantity REAL, type TEXT, priceStep REAL, priceLoss REAL, created TEXT, PRIMARY KEY (pair, priceSell, type));";
         jdbcTemplate.executeUpdate(sqlCreate__Loss_Order);
 
         String sqlCreate__Stack_Order = "CREATE TABLE IF NOT EXISTS Stack_Order(orderId TEXT PRIMARY KEY);";

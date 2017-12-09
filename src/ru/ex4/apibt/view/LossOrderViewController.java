@@ -3,28 +3,24 @@ package ru.ex4.apibt.view;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import ru.ex4.apibt.Main;
 import ru.ex4.apibt.dto.LossOrderDto;
 import ru.ex4.apibt.service.LossOrderService;
 import ru.ex4.apibt.view.fxmlManager.IFxmlController;
 import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
 import ru.ex4.apibt.view.fxmlManager.LoaderFxmlController;
 
-import java.io.IOException;
 import java.util.List;
 
 public class LossOrderViewController implements IFxmlController {
     private ObservableList<LossOrderDto> lossOrderObservableList;
-    private Stage dialogStage;
     private LossOrderService lossOrderService;
+    private Stage dialogStage;
 
     @FXML
     public TableView<LossOrderDto> lossOrderTable;
@@ -45,18 +41,8 @@ public class LossOrderViewController implements IFxmlController {
     public TableColumn<LossOrderDto, String> createdLossOrderTableColumn;
 
 
-    @Override
-    public void initCtrl(IFxmlDto t) {
-
-    }
-
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
-    }
-
-    @Override
-    public IFxmlDto getResult() {
-        return null;
     }
 
     public LossOrderViewController() {
@@ -65,12 +51,25 @@ public class LossOrderViewController implements IFxmlController {
         this.lossOrderService = new LossOrderService();
     }
 
+    @Override
+    public IFxmlDto getResult() {
+        return null;
+    }
+
+    @Override
+    public void initCtrl(IFxmlDto fxmlDto) {
+        fillLossOrderTable();
+        fillLossOrderTableColumn();
+
+        addListener();
+    }
+
     @FXML
     private void initialize() {
     }
 
     @FXML
-    public void OnChangeLossOrderDialogShow(ActionEvent actionEvent) {
+    public void OnChangeLossOrderDialogShow(Event event) {
         LossOrderDto selectedItem = this.lossOrderTable.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
             handleLossOrderEditDialog(selectedItem);
@@ -78,7 +77,7 @@ public class LossOrderViewController implements IFxmlController {
     }
 
     @FXML
-    public void OnDeleteLossOrder(ActionEvent actionEvent) {
+    public void OnDeleteLossOrder(Event event) {
         LossOrderDto selectedItem = this.lossOrderTable.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
             lossOrderService.delete(selectedItem);
@@ -86,17 +85,26 @@ public class LossOrderViewController implements IFxmlController {
         }
     }
 
+    private void addListener() {
+        this.lossOrderTable.setRowFactory(param -> {
+            TableRow<LossOrderDto> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    handleLossOrderEditDialog(row.getItem());
+                }
+            });
+            return row;
+        });
+    }
+
     @FXML
-    public void btnOk(ActionEvent actionEvent) {
+    public void btnOk(Event event) {
         dialogStage.close();
     }
 
-    public void initCtrl() {
-        fillLossOrderTable();
-        fillLossOrderTableColumn();
-    }
-
     private void fillLossOrderTable() {
+        this.lossOrderObservableList.clear();
+
         List<LossOrderDto> trailingDtoList = lossOrderService.getTrailingDtoList();
         this.lossOrderObservableList.addAll(trailingDtoList);
         this.lossOrderTable.setItems(lossOrderObservableList);
@@ -113,38 +121,13 @@ public class LossOrderViewController implements IFxmlController {
     }
 
     private void handleLossOrderEditDialog(LossOrderDto lossOrderDto) {
-        LossOrderDto lossOrderDtoRezult = showEditDialog(lossOrderDto);
-        if (lossOrderDtoRezult != null) {
-            lossOrderService.save(lossOrderDtoRezult);
-        }
-    }
-
-
-    private LossOrderDto showEditDialog(LossOrderDto lossOrderDto) {
         LoaderFxmlController fxmlController = new LoaderFxmlController<LossOrderEditDialogController>();
-        return (LossOrderDto) fxmlController.lossOrderEditDialog(lossOrderDto, "LossOrderEditDialog");
+        LossOrderDto result = (LossOrderDto) fxmlController.lossOrderEditDialog(lossOrderDto, "LossOrderEditDialog");
+        if (result != null) {
+            lossOrderService.save(result);
 
-//        try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/LossOrderEditDialogController.fxml"));
-//            Parent parent = (Parent) fxmlLoader.load();
-//
-//            Stage modalStage = new Stage();
-//            modalStage.setTitle("new title");
-//            modalStage.initModality(Modality.APPLICATION_MODAL);
-//            Scene scene = new Scene(parent);
-//            modalStage.setScene(scene);
-//
-//            LossOrderEditDialogController editDialogController = (LossOrderEditDialogController) fxmlLoader.getController();
-//            editDialogController.initCtrl(lossOrderDto);
-//            editDialogController.setDialogStage(modalStage);
-//
-//            modalStage.showAndWait();
-//
-//            return editDialogController.getResult();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
+            initCtrl(null);
+        }
     }
 
 

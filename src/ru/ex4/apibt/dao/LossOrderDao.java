@@ -26,7 +26,7 @@ public class LossOrderDao {
     public List<LossOrder> getLossOrderList() {
         String sql = " SELECT\n" +
                 "  pair,\n" +
-                "  price,\n" +
+                "  priceSell,\n" +
                 "  quantity,\n" +
                 "  type,\n" +
                 "  priceStep,\n" +
@@ -40,7 +40,7 @@ public class LossOrderDao {
             while (resultSet.next()) {
                 lossOrderList.add(new LossOrder(
                         resultSet.getString("pair"),
-                        resultSet.getBigDecimal("price"),
+                        resultSet.getBigDecimal("priceSell"),
                         resultSet.getBigDecimal("quantity"),
                         TypeOrder.valueOf(resultSet.getString("type")),
                         resultSet.getBigDecimal("priceStep"),
@@ -55,14 +55,14 @@ public class LossOrderDao {
     }
 
     public void save(LossOrder lossOrder) {
-        String sql = "INSERT OR REPLACE INTO Stop_Trailing VALUES (:pair, :price, :quantity, :type, :priceStep, :priceLoss, :created);";
+        String sql = "INSERT OR REPLACE INTO Loss_Order VALUES (:pair, :priceSell, :quantity, :type, :priceStep, :priceLoss, :created);";
 
         PreparedParamsSetter prs = new PreparedParamsSetter();
         prs.setValues("pair", lossOrder.getPair());
-        prs.setValues("price", lossOrder.getPrice());
+        prs.setValues("priceSell", lossOrder.getPrice());
         prs.setValues("quantity", lossOrder.getQuantity());
         prs.setValues("type", lossOrder.getType().name());
-        prs.setValues("priceStep", lossOrder.getPriceLoss());
+        prs.setValues("priceStep", lossOrder.getPriceStep());
         prs.setValues("priceLoss", lossOrder.getPriceLoss());
         prs.setValues("created", DateUtil.format(lossOrder.getCreated()));
 
@@ -70,7 +70,7 @@ public class LossOrderDao {
     }
 
     public void delete(LossOrder lossOrder) {
-        String sql = "DELETE FROM Stop_Trailing WHERE pair=:pair AND created=:created ;";
+        String sql = "DELETE FROM Loss_Order WHERE pair=:pair AND created=:created ;";
 
         PreparedParamsSetter prs = new PreparedParamsSetter();
         prs.setValues("pair", lossOrder.getPair());

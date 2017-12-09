@@ -2,9 +2,7 @@ package ru.ex4.apibt.dto;
 
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
-import javafx.beans.value.ObservableValue;
 import ru.ex4.apibt.model.TypeOrder;
-import ru.ex4.apibt.util.DecimalUtil;
 import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
 
 import java.math.BigDecimal;

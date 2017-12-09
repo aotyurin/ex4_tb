@@ -13,7 +13,6 @@ import ru.ex4.apibt.view.fxmlManager.IFxmlController;
 import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -35,9 +34,23 @@ public class TrailingEditDialogController implements IFxmlController {
     private Label priceTrailingErrorTextField;
 
 
-
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
+    }
+
+    @Override
+    public void initCtrl(IFxmlDto trailingDto) {
+        if (trailingDto != null && trailingDto instanceof TrailingDto) {
+            this.trailingDto = (TrailingDto) trailingDto;
+
+            fillComboBox();
+            fillViewControls(this.trailingDto);
+        }
+    }
+
+    @Override
+    public IFxmlDto getResult() {
+        return this.trailingDto;
     }
 
     @FXML
@@ -46,18 +59,15 @@ public class TrailingEditDialogController implements IFxmlController {
 
     @FXML
     private void btnOk() {
-        if (isInputValid()) {
-            try {
-                this.trailingDto = new TrailingDto(this.pairTrailingLabel.getText(),
-                        TrendType.valueOf(this.trendTypeTrailingComboBox.getSelectionModel().getSelectedItem()),
-                        DecimalUtil.parse(this.priceTrailingTextField.getText()),
-                        DateUtil.parse(this.dateCreatedTrailingLabel.getText()),
-                        DateUtil.parse(this.dateNotifyTrailingLabel.getText()));
+        if (isInputValid() && this.trailingDto != null) {
+            TrailingDto tmp = this.trailingDto;
+            this.trailingDto = new TrailingDto(tmp.getPair(),
+                    TrendType.valueOf(this.trendTypeTrailingComboBox.getSelectionModel().getSelectedItem()),
+                    DecimalUtil.parse(this.priceTrailingTextField.getText()),
+                    tmp.getDateCreated(),
+                    tmp.getDateNotify());
 
-                dialogStage.close();
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            dialogStage.close();
         }
     }
 
@@ -67,14 +77,6 @@ public class TrailingEditDialogController implements IFxmlController {
         dialogStage.close();
     }
 
-
-    @Override
-    public void initCtrl(IFxmlDto trailingDto) {
-        this.trailingDto = (TrailingDto) trailingDto;
-
-        fillComboBox();
-        fillViewControls((TrailingDto) trailingDto);
-    }
 
     private void fillComboBox() {
         List<TrendType> trendTypes = TrendType.getList();
@@ -115,8 +117,5 @@ public class TrailingEditDialogController implements IFxmlController {
         return msg.length() == 0;
     }
 
-    public IFxmlDto getResult() {
-        return (IFxmlDto) this.trailingDto;
-    }
 
 }

@@ -4,7 +4,6 @@ import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 import ru.ex4.apibt.model.TypeOrder;
 import ru.ex4.apibt.util.DateUtil;
 

@@ -3,10 +3,11 @@ package ru.ex4.apibt.dto;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import ru.ex4.apibt.util.DecimalUtil;
+import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
 
 import java.math.BigDecimal;
 
-public class UserBalanceDto {
+public class UserBalanceDto implements IFxmlDto{
     private String currency;
     private BigDecimal amountBalance;
     private BigDecimal amountReserved;

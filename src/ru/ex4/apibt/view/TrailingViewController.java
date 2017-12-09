@@ -3,29 +3,31 @@ package ru.ex4.apibt.view;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import ru.ex4.apibt.Main;
 import ru.ex4.apibt.dto.TickerDto;
 import ru.ex4.apibt.dto.TrailingDto;
+import ru.ex4.apibt.dto.UserBalanceDto;
+import ru.ex4.apibt.model.TrendType;
+import ru.ex4.apibt.service.TickerService;
 import ru.ex4.apibt.service.TrailingService;
+import ru.ex4.apibt.view.fxmlManager.IFxmlController;
 import ru.ex4.apibt.view.fxmlManager.IFxmlDto;
 import ru.ex4.apibt.view.fxmlManager.LoaderFxmlController;
 
-import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
-public class TrailingViewController {
+public class TrailingViewController implements IFxmlController {
+    private ObservableList<TickerDto> tickerPairObservableList;
     private ObservableList<TrailingDto> trailingObservableList;
-    private Stage dialogStage;
 
+    private TickerService tickerService;
     private TrailingService trailingService;
+
+    private Stage dialogStage;
 
     @FXML
     private TableView<TickerDto> tickerPairTable;
@@ -59,9 +61,29 @@ public class TrailingViewController {
     }
 
     public TrailingViewController() {
+        this.tickerPairObservableList = FXCollections.observableArrayList();
         this.trailingObservableList = FXCollections.observableArrayList();
 
+        this.tickerService = new TickerService();
         this.trailingService = new TrailingService();
+    }
+
+    @Override
+    public void initCtrl(IFxmlDto userBalanceDto) {
+        if (userBalanceDto != null && userBalanceDto instanceof UserBalanceDto) {
+            fillTickerPairTable((UserBalanceDto) userBalanceDto);
+            fillTickerPairTableColumn();
+
+            addListener();
+
+            fillStopSignalTable();
+            fillStopSignalTableColumn();
+        }
+    }
+
+    @Override
+    public IFxmlDto getResult() {
+        return null;
     }
 
     @FXML
@@ -72,7 +94,7 @@ public class TrailingViewController {
     private void OnAddTrailingDialogShow() {
         TickerDto selectedItem = this.tickerPairTable.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
-            handleTrailingEditDialog(selectedItem.getPair(), null);
+            handleTrailingEditDialog(new TrailingDto(selectedItem.getPair(), TrendType.flat, selectedItem.getSellPrice(), new Date(), null));
         }
     }
 
@@ -80,7 +102,7 @@ public class TrailingViewController {
     private void OnEditTrailingDialogShow() {
         TrailingDto selectedItem = this.trailingTable.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
-            handleTrailingEditDialog(selectedItem.getPair(), selectedItem);
+            handleTrailingEditDialog(selectedItem);
         }
     }
 
@@ -99,20 +121,11 @@ public class TrailingViewController {
         dialogStage.close();
     }
 
-    public void initCtrl(ObservableList<TickerDto> tickerPairObservableList) throws IOException {
-        if (tickerPairObservableList == null) {
-            throw new IOException("error initialize controller");
-        }
-        fillTickerPairTable(tickerPairObservableList);
-        fillTickerPairTableColumn();
 
-        addListener();
+    private void fillTickerPairTable(UserBalanceDto userBalanceDto) {
+        List<TickerDto> tickerDtoList = tickerService.getTickerListByCurrency(userBalanceDto.currencyProperty().get());
 
-        fillStopSignalTable();
-        fillStopSignalTableColumn();
-    }
-
-    private void fillTickerPairTable(ObservableList<TickerDto> tickerPairObservableList) {
+        this.tickerPairObservableList.addAll(tickerDtoList);
         this.tickerPairTable.setItems(tickerPairObservableList);
     }
 
@@ -160,42 +173,15 @@ public class TrailingViewController {
         this.dateNotifyTrailingTableColumn.setCellValueFactory(param -> param.getValue().dateNotifyProperty());
     }
 
-    private void handleTrailingEditDialog(String pair, TrailingDto trailingDto) {
+    private void handleTrailingEditDialog(TrailingDto trailingDto) {
         LoaderFxmlController fxmlController = new LoaderFxmlController<TrailingEditDialogController>();
-        TrailingDto result = (TrailingDto) fxmlController.lossOrderEditDialog(trailingDto, "TrailingEditDialog");
+        TrailingDto result = (TrailingDto) fxmlController.trailingEditDialog(trailingDto, "TrailingEditDialog");
 
         if (result != null) {
             trailingService.save(result);
 
             fillStopSignalTable();
         }
-
-//        try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("view/TrailingEditDialog.fxml"));
-//
-//            Parent parent = (Parent) fxmlLoader.load();
-//
-//            Stage modalStage = new Stage();
-//            modalStage.setTitle("stop..tr..");
-//            modalStage.initModality(Modality.APPLICATION_MODAL);
-//            Scene scene = new Scene(parent);
-//            modalStage.setScene(scene);
-//
-//            TrailingEditDialogController trailingViewController = (TrailingEditDialogController) fxmlLoader.getController();
-//            trailingViewController.initCtrl(pair, trailingDto);
-//            trailingViewController.setDialogStage(modalStage);
-//
-//            modalStage.showAndWait();
-//
-//            TrailingDto result = trailingViewController.getResult();
-//            if (result != null) {
-//                trailingService.save(result);
-//
-//                fillStopSignalTable();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
 }
